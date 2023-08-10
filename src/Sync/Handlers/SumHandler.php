@@ -27,7 +27,16 @@ class SumHandler implements RequestHandlerInterface
 
     }
     public function handle(ServerRequestInterface $request): ResponseInterface {
-        $sum = array_sum(array_values($request->getQueryParams()));
+        $arrayParams = $request->getQueryParams();
+        if(array_filter($arrayParams, function ($value) {
+            return $value === '';
+        })) {
+            $sum = array_sum(array_keys($request->getQueryParams()));
+        } else {
+            $sum = array_sum(array_values($request->getQueryParams()));
+        }
+
+
         $this->logger();
         $this->log->info($sum);
 
