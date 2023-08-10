@@ -19,6 +19,7 @@ class SumHandler implements RequestHandlerInterface
 
     protected $log;
 
+
     public function logger() {
         $currentDate = date('Y-m-d');
         $this->log = new Logger('sum_logger');
@@ -27,15 +28,20 @@ class SumHandler implements RequestHandlerInterface
 
     }
     public function handle(ServerRequestInterface $request): ResponseInterface {
-        $arrayParams = $request->getQueryParams();
-        if(array_filter($arrayParams, function ($value) {
-            return $value === '';
-        })) {
-            $sum = array_sum(array_keys($request->getQueryParams()));
-        } else {
-            $sum = array_sum(array_values($request->getQueryParams()));
-        }
 
+        $sum = 0;
+
+        $params = $request->getQueryParams();
+        foreach($params as $key => $value) {
+            if(is_numeric($key) && is_numeric($value) === false) {
+                $sum += intval($key);
+            } elseif ((is_numeric($key) && is_numeric($value))) {
+                $sum += intval($value);
+            } elseif (is_numeric($key) === false && is_numeric($value))  {
+               $sum += intval($value);
+            }
+
+        }
 
         $this->logger();
         $this->log->info($sum);
