@@ -48,12 +48,13 @@
         "laminas/laminas-component-installer": "^2.6",
         "laminas/laminas-config-aggregator": "^1.6",
         "laminas/laminas-diactoros": "^2.7",
+        "laminas/laminas-servicemanager": "^3.4",
         "laminas/laminas-stdlib": "^3.6",
         "mezzio/mezzio": "^3.7",
-        "mezzio/mezzio-helpers": "^5.7",
-        "laminas/laminas-servicemanager": "^3.4",
         "mezzio/mezzio-fastroute": "^3.0.3",
-        "mezzio/mezzio-platesrenderer": "^2.2"
+        "mezzio/mezzio-helpers": "^5.7",
+        "mezzio/mezzio-platesrenderer": "^2.2",
+        "monolog/monolog": "^2.1"
     },
     "require-dev": {
         "laminas/laminas-development-mode": "^3.3.0",
@@ -64,7 +65,7 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/App/src/"
+            "Sync\\": "src/Sync/"
         }
     },
     "autoload-dev": {
