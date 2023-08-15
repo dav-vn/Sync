@@ -6,3 +6,4 @@
 /vendor/
 /.idea/
 /logs/
+/tokens.json
