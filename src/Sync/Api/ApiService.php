@@ -31,7 +31,7 @@ class ApiService
         $this->apiClient = new AmoCRMApiClient(
             '86ce267b-409f-47b7-bd40-2190ff0a743c',
             'EkfgYsqNbys5vmfBqLs4CVzMKdWVwVT6pjvBHXMUxDljqNPgZz5M0GD6Fp5PuevI',
-            'https://webhook.site/9edd1c45-ecde-480f-b721-ad4b8bdc40c9',
+            'https://localhost.loca.lt/auth',
         );
     }
 

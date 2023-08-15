@@ -29,13 +29,11 @@ class AuthHandler implements RequestHandlerInterface
     {
         $apiService = new ApiService();
 
-        $queryParams = $request->getQueryParams();
-
-        $apiService->auth($queryParams);
-
+        $userName = $apiService->auth($request->getQueryParams());
 
 
         return new JsonResponse([
+            'name' => $userName,
         ]);
     }
 
