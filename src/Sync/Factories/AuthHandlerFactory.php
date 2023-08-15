@@ -4,15 +4,27 @@ declare(strict_types=1);
 
 namespace Sync\Factories;
 
-use Sync\Handlers\AuthHandler;
-use Sync\Handlers\SumHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sync\Handlers\AuthHandler;
 
-class AuthHandlerFactory {
+/**
+ * Class AuthHandlerFactory
+ *
+ * @package Sync\Factories\
+ */
+class AuthHandlerFactory
+{
 
-    public function __invoke(ContainerInterface $container): RequestHandlerInterface {
-        return new AuthHandler;
+    /**
+     * Возврат нового экземпляра Auth/Handler
+     *
+     * @param ContainerInterface $container
+     * @return RequestHandlerInterface
+     */
+    public function __invoke(ContainerInterface $container): RequestHandlerInterface
+    {
+        return new AuthHandler();
     }
 
 }
