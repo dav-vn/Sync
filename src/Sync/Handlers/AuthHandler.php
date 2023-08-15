@@ -31,16 +31,11 @@ class AuthHandler implements RequestHandlerInterface
 
         $queryParams = $request->getQueryParams();
 
-        if (!isset($queryParams['id'])) {
-            $apiService->auth($queryParams);
-        } else {
-            $queryParams['id'] = null;
-            $apiService->auth($queryParams);
-        }
+        $apiService->auth($queryParams);
+
 
 
         return new JsonResponse([
-
         ]);
     }
 
