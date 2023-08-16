@@ -15,7 +15,6 @@ use Sync\Handlers\AuthHandler;
  */
 class AuthHandlerFactory
 {
-
     /**
      * Возврат нового экземпляра Auth/Handler
      *
@@ -26,5 +25,4 @@ class AuthHandlerFactory
     {
         return new AuthHandler();
     }
-
 }

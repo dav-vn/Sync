@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sync\Handlers;
 
-
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,42 +12,53 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FirePHPHandler;
 
-
+/**
+ * Class SumHandler
+ *
+ * @package Sync\Handlers\
+ */
 class SumHandler implements RequestHandlerInterface
 {
+    /** @var null $log Переменная для хранения логов */
+    protected $logParams = null;
 
-    protected $log;
-
-
-    public function logger() {
+    /**
+     * Monolog logger constructor.
+     */
+    public function logger()
+    {
         $currentDate = date('Y-m-d');
-        $this->log = new Logger('sum_logger');
-        $this->log->pushHandler(new StreamHandler("./logs/{$currentDate}/requests.log", Logger::DEBUG));
-        $this->log->pushHandler(new FirePHPHandler);
-
+        $this->logParams = new Logger('sum_logger');
+        $this->logParams->pushHandler(new StreamHandler("./logs/{$currentDate}/requests.log", Logger::DEBUG));
+        $this->logParams->pushHandler(new FirePHPHandler);
     }
-    public function handle(ServerRequestInterface $request): ResponseInterface {
 
+    /**
+     * Обработка HTTP-запроса /sum
+     *
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
         $sum = 0;
 
-        $params = $request->getQueryParams();
-        foreach($params as $key => $value) {
-            if(is_numeric($key) && is_numeric($value) === false) {
+        $queryParams = $request->getQueryParams();
+        foreach ($queryParams as $key => $value) {
+            if (is_numeric($key) && is_numeric($value) === false) {
                 $sum += intval($key);
             } elseif ((is_numeric($key) && is_numeric($value))) {
                 $sum += intval($value);
-            } elseif (is_numeric($key) === false && is_numeric($value))  {
-               $sum += intval($value);
+            } elseif (is_numeric($key) === false && is_numeric($value)) {
+                $sum += intval($value);
             }
-
         }
 
         $this->logger();
-        $this->log->info($sum);
+        $this->logParams->info($sum);
 
         return new JsonResponse([
             'sum' => $sum,
         ]);
-
     }
 }
