@@ -8,10 +8,21 @@ use Sync\Handlers\SumHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class SumHandlerFactory {
-
-    public function __invoke(ContainerInterface $container): RequestHandlerInterface {
+/**
+ * Class SumHandlerFactory
+ *
+ * @package Sync\Factories\
+ */
+class SumHandlerFactory
+{
+    /**
+     * Возврат нового экземпляра SumHandler
+     *
+     * @param ContainerInterface $container
+     * @return RequestHandlerInterface
+     */
+    public function __invoke(ContainerInterface $container): RequestHandlerInterface
+    {
         return new SumHandler;
     }
-
 }

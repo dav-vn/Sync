@@ -31,7 +31,7 @@ class ApiService
         $this->apiClient = new AmoCRMApiClient(
             '86ce267b-409f-47b7-bd40-2190ff0a743c',
             'EkfgYsqNbys5vmfBqLs4CVzMKdWVwVT6pjvBHXMUxDljqNPgZz5M0GD6Fp5PuevI',
-            'https://localhost.loca.lt/auth',
+            'https://heavy-snake-42.loca.lt/auth',
         );
     }
 
