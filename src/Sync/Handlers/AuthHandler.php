@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sync\Handlers;
 
-
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,7 +17,6 @@ use Sync\Api\ApiService;
  */
 class AuthHandler implements RequestHandlerInterface
 {
-
     /**
      * Обработка HTTP-запроса /auth
      *
@@ -31,12 +29,9 @@ class AuthHandler implements RequestHandlerInterface
 
         $userName = $apiService->auth($request->getQueryParams());
 
-
         return new JsonResponse([
             'name' => $userName,
         ]);
     }
-
-
 }
 
