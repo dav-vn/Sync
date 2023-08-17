@@ -2,62 +2,34 @@
 
 namespace Sync\Api;
 
-use AmoCRM\Client\AmoCRMApiClient;
-use AmoCRM\Collections\ContactsCollection;
-use AmoCRM\Exceptions\AmoCRMApiException;
-use AmoCRM\Exceptions\AmoCRMMissedTokenException;
-use AmoCRM\Models\ContactModel;
 use League\OAuth2\Client\Token\AccessTokenInterface;
-use Sync\Entity\EntityServiceInterface;
-
 
 /**
  * Class AuthService.
  *
  * @package Sync\Api
  */
-class ContactsService implements EntityServiceInterface
+class ContactsService extends AmoApiService
 {
-
-    /** @var AuthService клиент. */
-    private AuthService $authService;
-
-    /** @var AmoCRMApiClient AmoCRM клиент. */
-    private AmoCRMApiClient $apiClient;
-
     /** @var string Файл хранения токенов. */
     private const TOKENS_FILE = './tokens.json';
 
+    /** @var AuthService Сервис аутенфикации интеграции. */
+    protected AuthService $authService;
 
     /**
-     * ContactService constructor
+     * Получение ассоциативного массива с именами всех контактов
+     * и имеющихся у них email адресов.
+     * @return array возвращаем список из всех контактов
      */
-    public function __construct()
+    public function get(): array
     {
         $this->authService = new AuthService();
-        $this->apiClient = new AmoCRMApiClient(
-            '86ce267b-409f-47b7-bd40-2190ff0a743c',
-            'EkfgYsqNbys5vmfBqLs4CVzMKdWVwVT6pjvBHXMUxDljqNPgZz5M0GD6Fp5PuevI',
-            'https://localhost.loca.lt/auth',
-        );
-    }
+        $userId = array_keys(json_decode(file_get_contents(self::TOKENS_FILE), true));
+        $accessToken = $this->authService->readToken(intval(reset($userId)));
 
-    /**
-     * Получение JSON обьекта с данными по сущности контакт
-     *
-     * @param array $queryParams Входные GET параметры.
-     * @return object возвращаем список из всех контактов.
-     * @throws AmoCRMMissedTokenException
-     */
-    public function get(array $queryParams): object
-    {
-        $id = array_keys(json_decode(file_get_contents(self::TOKENS_FILE), true));
-        $id = intval(reset($id));
-
-
-        $accessToken = $this->authService->readToken($id);
-
-        $this->apiClient->setAccessToken($accessToken)
+        $this->apiClient
+            ->setAccessToken($accessToken)
             ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
             ->onAccessTokenRefresh(
                 function (AccessTokenInterface $accessToken, string $baseDomain) {
@@ -72,56 +44,29 @@ class ContactsService implements EntityServiceInterface
                 }
             );
 
+        $contactsData = $this->apiClient->contacts()->get();
+        $result = [];
 
-        return $this->apiClient->contacts()->get();
-    }
+        if (!empty($contactsData)) {
+            foreach ($contactsData as $contacts) {
+                $name = $contacts->{'name'};
+                $emails = [];
+                foreach ($contacts->{'custom_fields_values'} as $values) {
+                    if ($values->{'field_code'} === 'EMAIL') {
+                        foreach ($values->{'values'} as $value) {
+                            $emails[] = $value->{'value'};
+                        }
+                    }
+                }
 
-    /**
-     * Добавление нового контакта и получение обновленного списка контактов
-     *
-     * @param string $name Имя нового контакта
-     * @return object возвращаем список из всех контактов.
-     * @throws AmoCRMMissedTokenException
-     */
-    public function add(string $name): object
-    {
-        $contact = new ContactModel();
-        $contact->setName($name);
-
-        try {
-            $this->apiClient->contacts()->addOne($contact);
-        } catch (AmoCRMApiException $e) {
-            printError($e);
-            die;
+                $result[] = [
+                    'name' => $name,
+                    'emails' => !empty($emails) ? $emails : null,
+                ];
+            }
         }
 
-        return $this->apiClient->contacts()->get();
+        return $result;
+
     }
-
-    /**
-     * Добавление нового контакта и получение обновленного списка контактов
-     *
-     * @param array $names Имена новых контактов, которые необходимо создать
-     * @return object возвращаем список из всех контактов.
-     * @throws AmoCRMMissedTokenException
-     */
-    public function addSome(array $names): object
-    {
-        $contactsCollection = new ContactsCollection();
-        foreach ($names as $name) {
-            $contact = new ContactModel();
-            $contact->setName($name);
-
-            $contactsCollection->add($contact);
-        }
-        try {
-            $this->apiClient->contacts()->add($contactsCollection);
-        } catch (AmoCRMApiException $e) {
-            printError($e);
-            die;
-        }
-
-        return $this->apiClient->contacts()->get();
-    }
-
 }

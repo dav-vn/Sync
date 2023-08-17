@@ -27,30 +27,8 @@ class ContactsHandler implements RequestHandlerInterface
     {
         $apiService = new ContactsService();
 
-        $contactsData = $apiService->get($request->getQueryParams());
-        $result = [];
-
-        if (!empty($contactsData)) {
-            foreach ($contactsData as $contacts) {
-                $name = $contacts->{'name'};
-                $emails = [];
-                foreach ($contacts->{'custom_fields_values'} as $values) {
-                    if ($values->{'field_code'} === 'EMAIL') {
-                        foreach ($values->{'values'} as $value) {
-                            $emails[] = $value->{'value'};
-                        }
-                    }
-                }
-
-                $result[] = [
-                    'name' => $name,
-                    'emails' => !empty($emails) ? $emails : null,
-                ];
-            }
-        }
-
         return new JsonResponse([
-            $result
+            $apiService->get(),
         ]);
     }
 }
