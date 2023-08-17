@@ -7,12 +7,9 @@ use AmoCRM\Collections\ContactsCollection;
 use AmoCRM\Exceptions\AmoCRMApiException;
 use AmoCRM\Exceptions\AmoCRMMissedTokenException;
 use AmoCRM\Models\ContactModel;
-use Exception;
-use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Sync\Entity\EntityServiceInterface;
-use Throwable;
-use Sync\Api\AuthService;
+
 
 /**
  * Class AuthService.
@@ -50,6 +47,7 @@ class ContactsService implements EntityServiceInterface
      *
      * @param array $queryParams Входные GET параметры.
      * @return object возвращаем список из всех контактов.
+     * @throws AmoCRMMissedTokenException
      */
     public function get(array $queryParams): object
     {
@@ -83,6 +81,7 @@ class ContactsService implements EntityServiceInterface
      *
      * @param string $name Имя нового контакта
      * @return object возвращаем список из всех контактов.
+     * @throws AmoCRMMissedTokenException
      */
     public function add(string $name): object
     {
@@ -104,6 +103,7 @@ class ContactsService implements EntityServiceInterface
      *
      * @param array $names Имена новых контактов, которые необходимо создать
      * @return object возвращаем список из всех контактов.
+     * @throws AmoCRMMissedTokenException
      */
     public function addSome(array $names): object
     {

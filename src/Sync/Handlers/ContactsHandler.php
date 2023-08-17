@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace Sync\Handlers;
 
-use AmoCRM\Collections\Leads\Pipelines\PipelinesCollection;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\FirePHPHandler;
-use Sync\Api\AuthService;
 use Sync\Api\ContactsService;
 
 /**
