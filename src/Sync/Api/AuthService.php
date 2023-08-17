@@ -8,7 +8,6 @@ use League\OAuth2\Client\Token\AccessToken;
 use Symfony\Component\Dotenv\Dotenv;
 use Throwable;
 
-
 /**
  * Class AuthService.
  *
