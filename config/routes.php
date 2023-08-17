@@ -40,4 +40,5 @@ use Psr\Container\ContainerInterface;
 return static function (Application $app, MiddlewareFactory $factory, ContainerInterface $container): void {
     $app->get('/sum', \Sync\Handlers\SumHandler::class, 'sum');
     $app->get('/auth', \Sync\Handlers\AuthHandler::class, 'auth');
+    $app->get('/contacts', \Sync\Handlers\ContactsHandler::class, 'contacts');
 };
