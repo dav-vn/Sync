@@ -8,11 +8,11 @@ use League\OAuth2\Client\Token\AccessToken;
 use Throwable;
 
 /**
- * Class ApiService.
+ * Class AuthService.
  *
  * @package Sync\Api
  */
-class ApiService
+class AuthService
 {
     /** @var string Базовый домен авторизации. */
     private const TARGET_DOMAIN = 'kommo.com';
@@ -24,7 +24,7 @@ class ApiService
     private AmoCRMApiClient $apiClient;
 
     /**
-     * ApiService constructor.
+     * AuthService constructor.
      */
     public function __construct()
     {

@@ -8,7 +8,7 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sync\Api\ApiService;
+use Sync\Api\AuthService;
 
 /**
  * Class AuthHandler
@@ -17,6 +17,7 @@ use Sync\Api\ApiService;
  */
 class AuthHandler implements RequestHandlerInterface
 {
+
     /**
      * Обработка HTTP-запроса /auth
      *
@@ -25,13 +26,15 @@ class AuthHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $apiService = new ApiService();
 
-        $userName = $apiService->auth($request->getQueryParams());
+        $apiService = new AuthService();
+
+        $username = $apiService->auth($request->getQueryParams());
 
         return new JsonResponse([
-            'name' => $userName,
+            'name' => $username,
         ]);
+
     }
 }
 
