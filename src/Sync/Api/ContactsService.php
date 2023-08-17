@@ -26,9 +26,12 @@ class ContactsService extends AmoApiService
     {
         $this->authService = new AuthService();
         $userId = array_keys(json_decode(file_get_contents(self::TOKENS_FILE), true));
-        $accessToken = $this->authService->readToken(intval(reset($userId)));
+        $accessToken = $this
+            ->authService
+            ->readToken(intval(reset($userId)));
 
-        $this->apiClient
+        $this
+            ->apiClient
             ->setAccessToken($accessToken)
             ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
             ->onAccessTokenRefresh(
@@ -67,6 +70,5 @@ class ContactsService extends AmoApiService
         }
 
         return $result;
-
     }
 }

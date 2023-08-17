@@ -34,7 +34,6 @@ class AuthHandler implements RequestHandlerInterface
         return new JsonResponse([
             'name' => $username,
         ]);
-
     }
 }
 
