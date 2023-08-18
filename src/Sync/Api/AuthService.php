@@ -5,35 +5,21 @@ namespace Sync\Api;
 use AmoCRM\Client\AmoCRMApiClient;
 use Exception;
 use League\OAuth2\Client\Token\AccessToken;
+use Symfony\Component\Dotenv\Dotenv;
 use Throwable;
 
 /**
- * Class ApiService.
+ * Class AuthService.
  *
  * @package Sync\Api
  */
-class ApiService
+class AuthService extends AmoApiService
 {
     /** @var string Базовый домен авторизации. */
     private const TARGET_DOMAIN = 'kommo.com';
 
     /** @var string Файл хранения токенов. */
-    private const TOKENS_FILE = './tokens.json';
-
-    /** @var AmoCRMApiClient AmoCRM клиент. */
-    private AmoCRMApiClient $apiClient;
-
-    /**
-     * ApiService constructor.
-     */
-    public function __construct()
-    {
-        $this->apiClient = new AmoCRMApiClient(
-            '86ce267b-409f-47b7-bd40-2190ff0a743c',
-            'EkfgYsqNbys5vmfBqLs4CVzMKdWVwVT6pjvBHXMUxDljqNPgZz5M0GD6Fp5PuevI',
-            'https://heavy-snake-42.loca.lt/auth',
-        );
-    }
+    protected const TOKENS_FILE = './tokens.json';
 
     /**
      * Получение токена досутпа для аккаунта.

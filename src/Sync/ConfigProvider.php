@@ -21,7 +21,7 @@ class ConfigProvider
             'factories' => [
                 \Sync\Handlers\SumHandler::class => \Sync\Factories\SumHandlerFactory::class,
                 \Sync\Handlers\AuthHandler::class => \Sync\Factories\AuthHandlerFactory::class,
-
+                \Sync\Handlers\ContactsHandler::class => \Sync\Factories\ContactsHandlerFactory::class,
             ],
         ];
     }
