@@ -29,8 +29,8 @@ class AuthService extends AmoApiService
      */
     public function auth(array $queryParams): string
     {
-        session_start();
 
+        session_start();
         /** Занесение системного идентификатора в сессию для реализации OAuth2.0. */
         if (!empty($queryParams['id'])) {
             $_SESSION['service_id'] = $queryParams['id'];

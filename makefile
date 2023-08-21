@@ -7,7 +7,7 @@ up: install build
 	docker-compose up -d
 
 install:
-	composer install
+	composer install --ignore-platform-reqs
 	composer dump-autoload
 	composer development-enable
 
