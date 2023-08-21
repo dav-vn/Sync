@@ -8,7 +8,7 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sync\Api\ContactsService;
+use Sync\Api\UnisenderContactService;
 
 /**
  * Class UnisenderContactHandler
@@ -25,10 +25,10 @@ class UnisenderContactHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $apiService = new ContactsService();
+        $unisenderService = new UnisenderContactService();
 
         return new JsonResponse([
-            $apiService->get(),
+            $unisenderService->getContact($request->getQueryParams()),
         ]);
     }
 }
