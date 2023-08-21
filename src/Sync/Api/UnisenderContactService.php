@@ -18,7 +18,6 @@ $dotenv->load('./.env');
  */
 class UnisenderContactService
 {
-
     /** @var UnisenderApi UnisenderApi клиент. */
     private UnisenderApi $unisender;
 
@@ -32,33 +31,34 @@ class UnisenderContactService
 
     /**
      * Получение информации о контакте в Unisender по привязанной почте
-     * @return object возвращаем информацию о контакте.
-     */
+     * @param array $queryParams Входные GET параметры.
+     * @return object | string[] JSON данные о контакте | Сообщение об ошибке
+     **/
     public function getContact(array $queryParams)
     {
-        if (empty($queryParams)) {
-            return new JsonResponse([
+        if (empty($queryParams['email'])) {
+            return [
                 'error' => 'Email is empty'
-            ], 400);
+            ];
         }
 
         try {
             $contact = $this
                 ->unisender
                 ->getContact($queryParams);
-            if (isset($contact)) {
-                $contact = json_decode($contact);
-                return $contact
+            if (strpos($contact, 'result')) {
+                return json_decode($contact)
                     ->{'result'}
                     ->{'email'};
-            } else {
-                return new JsonResponse([
-                    'error' => 'Contact not found'
-                ], 404);
+            } elseif (strpos($contact, 'not a valid email address')) {
+                return [
+                    'error' => 'Email not found'
+                ];
             }
         } catch (Throwable $e) {
             die($e->getMessage());
         }
     }
 }
+
 
