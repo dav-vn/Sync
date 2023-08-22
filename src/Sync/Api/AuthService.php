@@ -2,10 +2,8 @@
 
 namespace Sync\Api;
 
-use AmoCRM\Client\AmoCRMApiClient;
 use Exception;
 use League\OAuth2\Client\Token\AccessToken;
-use Symfony\Component\Dotenv\Dotenv;
 use Throwable;
 
 /**
@@ -30,6 +28,7 @@ class AuthService extends AmoApiService
     public function auth(array $queryParams): string
     {
         session_start();
+
         /** Занесение системного идентификатора в сессию для реализации OAuth2.0. */
         if (!empty($queryParams['id'])) {
             $_SESSION['service_id'] = $queryParams['id'];
