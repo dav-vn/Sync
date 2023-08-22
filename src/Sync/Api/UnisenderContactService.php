@@ -2,11 +2,7 @@
 
 namespace Sync\Api;
 
-use Laminas\Diactoros\Response\JsonResponse;
-use League\OAuth2\Client\Token\AccessTokenInterface;
 use Symfony\Component\Dotenv\Dotenv;
-use Unisender\ApiWrapper\UnisenderApi;
-use Throwable;
 
 $dotenv = new Dotenv();
 $dotenv->load('./.env');
@@ -16,19 +12,8 @@ $dotenv->load('./.env');
  *
  * @package Sync\Api
  */
-class UnisenderContactService
+class UnisenderContactService extends UnisenderApiService
 {
-    /** @var UnisenderApi UnisenderApi клиент. */
-    private UnisenderApi $unisender;
-
-    /**
-     * UnisenderContactService constructor.
-     */
-    public function __construct()
-    {
-        $this->unisender = new UnisenderApi($_ENV['UNISENDER_API']);
-    }
-
     /**
      * Получение информации о контакте в Unisender по привязанной почте
      * @param array $queryParams Входные GET параметры.
@@ -38,25 +23,24 @@ class UnisenderContactService
     {
         if (empty($queryParams['email'])) {
             return [
-                'error' => 'Email is empty'
+                'status' => 'error',
+                'error_message' => 'Email is empty',
             ];
         }
 
-        try {
-            $contact = $this
-                ->unisender
-                ->getContact($queryParams);
-            if (strpos($contact, 'result')) {
-                return json_decode($contact)
-                    ->{'result'}
-                    ->{'email'};
-            } elseif (strpos($contact, 'not a valid email address')) {
-                return [
-                    'error' => 'Email not found'
-                ];
-            }
-        } catch (Throwable $e) {
-            die($e->getMessage());
+        $contact = $this
+            ->unisenderApi
+            ->getContact($queryParams);
+
+        if (strpos($contact, 'result')) {
+            return json_decode($contact)
+                ->{'result'}
+                ->{'email'};
+        } elseif (strpos($contact, 'not a valid email address')) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Email not found'
+            ];
         }
     }
 }
