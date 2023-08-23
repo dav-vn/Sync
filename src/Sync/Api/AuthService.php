@@ -2,10 +2,8 @@
 
 namespace Sync\Api;
 
-use AmoCRM\Client\AmoCRMApiClient;
 use Exception;
 use League\OAuth2\Client\Token\AccessToken;
-use Symfony\Component\Dotenv\Dotenv;
 use Throwable;
 
 /**
