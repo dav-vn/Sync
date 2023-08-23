@@ -28,7 +28,7 @@ class ContactsHandler implements RequestHandlerInterface
         $apiService = new ContactsService();
 
         return new JsonResponse([
-            $apiService->get(),
+            $apiService->get($request->getQueryParams()['id']),
         ]);
     }
 }

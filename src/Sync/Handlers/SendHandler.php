@@ -28,7 +28,7 @@ class SendHandler implements RequestHandlerInterface
         $sendService = new SendService();
 
         return new JsonResponse([
-            $sendService->sendContacts(),
+            $sendService->sendContacts($request->getQueryParams()['id']),
         ]);
     }
 }

@@ -26,17 +26,17 @@ class ContactsService extends AmoApiService
      * и имеющихся у них email адресов.
      * @return array возвращаем список из всех контакто
      */
-    public function get(): array
+    public function get($userId): array
     {
         $pageData = [];
         $result = [];
         $count = 0;
 
         $this->authService = new AuthService();
-        $userId = array_keys(json_decode(file_get_contents(self::TOKENS_FILE), true));
+//        $userId = array_keys(json_decode(file_get_contents(self::TOKENS_FILE), true));
         $accessToken = $this
             ->authService
-            ->readToken(intval(reset($userId)));
+            ->readToken(intval($userId));
 
         $this
             ->apiClient
