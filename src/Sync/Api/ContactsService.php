@@ -6,6 +6,7 @@ use AmoCRM\Exceptions\AmoCRMApiException;
 use AmoCRM\Exceptions\AmoCRMMissedTokenException;
 use AmoCRM\Exceptions\AmoCRMoAuthApiException;
 use AmoCRM\Filters\ContactsFilter;
+use Laminas\Diactoros\Response\JsonResponse;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 
 /**
@@ -22,9 +23,9 @@ class ContactsService extends AmoApiService
      * Получение ассоциативного массива с именами всех контактов
      * и имеющихся у них email адресов.
      * @param string $userId
-     * @return array возвращаем список из всех контактов
+     * @return array | object возвращаем список из всех контактов | вывод ошибки в формате JSON
      */
-    public function get(string $userId): array
+    public function get(string $userId)
     {
         $pageData = [];
         $result = [];
@@ -59,20 +60,20 @@ class ContactsService extends AmoApiService
                 ->get()
                 ->count();
         } catch (AmoCRMMissedTokenException $e) {
-            return [
+            return new JsonResponse([
                 'status' => 'error',
                 'error_message' => 'Ошибка доступа к токену',
-            ];
+            ]);
         } catch (AmoCRMoAuthApiException $e) {
-            return [
+            return new JsonResponse([
                 'status' => 'error',
                 'error_message' => 'Ошибка доступа к API',
-            ];
+            ]);
         } catch (AmoCRMApiException $e) {
-            return [
+            return new JsonResponse([
                 'status' => 'error',
                 'error_message' => 'Ошибка вызова к API',
-            ];
+            ]);
         }
 
         for ($i = 0; $i <= intdiv($count, 500); $i++) {
@@ -86,20 +87,20 @@ class ContactsService extends AmoApiService
                     ->contacts()
                     ->get($contactsFilter);
             } catch (AmoCRMMissedTokenException $e) {
-                return [
+                return new JsonResponse([
                     'status' => 'error',
                     'error_message' => 'Ошибка доступа к токену',
-                ];
+                ]);
             } catch (AmoCRMoAuthApiException $e) {
-                return [
+                return new JsonResponse([
                     'status' => 'error',
                     'error_message' => 'Ошибка доступа к API',
-                ];
+                ]);
             } catch (AmoCRMApiException $e) {
-                return [
+                return new JsonResponse([
                     'status' => 'error',
                     'error_message' => 'Ошибка вызова к API',
-                ];
+                ]);
             }
 
 
