@@ -16,10 +16,12 @@ class SendService extends UnisenderApiService
      * Получение токена досутпа для аккаунта.
      * @return array Ответ на запрос о выгрузке контактов в Unisender.
      */
-    public function sendContacts($userId): array
+    public function sendContacts(string $userId): array
     {
         $this->contactService = new ContactsService();
-        $contactsList = $this->contactService->get($userId);
+        $contactsList = $this
+            ->contactService
+            ->get($userId);
 
         $result = [];
         $data = [];
@@ -38,7 +40,9 @@ class SendService extends UnisenderApiService
                 'data' => $data,
             );
 
-            $result[] = $this->unisenderApi->importContacts($request);
+            $result[] = $this
+                ->unisenderApi
+                ->importContacts($request);
         }
 
         if (!isset($result['error'])) {
