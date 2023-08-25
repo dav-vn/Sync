@@ -2,7 +2,6 @@
 
 namespace Sync\Api;
 
-use AmoCRM\Client\AmoCRMApiClient;
 use Symfony\Component\Dotenv\Dotenv;
 use Unisender\ApiWrapper\UnisenderApi;
 

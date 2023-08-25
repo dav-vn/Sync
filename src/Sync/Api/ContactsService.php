@@ -30,7 +30,7 @@ class ContactsService extends AmoApiService
         if ($userId == 0 || !is_numeric($userId) || empty($userId)) {
             return [
                 'status' => 'error',
-                'error_message' => 'Not a valid ID'
+                'error_message' => 'Not a valid ID',
             ];
         }
 
@@ -80,9 +80,9 @@ class ContactsService extends AmoApiService
             ]);
         }
 
-        for ($i = 0; $i <= intdiv($count, 500); $i++) {
+        for ($i = 0; $i <= intdiv($count, 250); $i++) {
             $contactsFilter = (new ContactsFilter())
-                ->setLimit(500)
+                ->setLimit(250)
                 ->setPage($i + 1);
 
             try {

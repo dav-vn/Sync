@@ -39,7 +39,7 @@ class UnisenderContactService extends UnisenderApiService
         } elseif (strpos($contact, 'not a valid email address')) {
             return [
                 'status' => 'error',
-                'error_message' => 'Email not found'
+                'error_message' => $contact,
             ];
         }
     }
