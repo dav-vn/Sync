@@ -27,8 +27,13 @@ class ContactsService extends AmoApiService
      */
     public function get(string $userId)
     {
-        $pageData = [];
-        $result = [];
+        if ($userId == 0 || !is_numeric($userId) || empty($userId)) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Not a valid ID'
+            ];
+        }
+
         $this->authService = new AuthService();
         $accessToken = $this
             ->authService
@@ -40,7 +45,8 @@ class ContactsService extends AmoApiService
             ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
             ->onAccessTokenRefresh(
                 function (AccessTokenInterface $accessToken, string $baseDomain) use ($userId) {
-                    $this->authService->saveToken($userId,
+                    $this->authService->saveToken(
+                        $userId,
                         [
                             'accessToken' => $accessToken->getToken(),
                             'refreshToken' => $accessToken->getRefreshToken(),
