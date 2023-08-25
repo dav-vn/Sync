@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Sync;
 
-
 use Sync\Factories\AuthHandlerFactory;
 use Sync\Factories\ContactsHandlerFactory;
 use Sync\Factories\SumHandlerFactory;
 use Sync\Factories\UnisenderContactHandlerFactory;
+use Sync\Factories\SendHandlerFactory;
 use Sync\Handlers\AuthHandler;
 use Sync\Handlers\ContactsHandler;
 use Sync\Handlers\SumHandler;
 use Sync\Handlers\UnisenderContactHandler;
+use Sync\Handlers\SendHandler;
 
 class ConfigProvider
 {
@@ -32,6 +33,7 @@ class ConfigProvider
                 AuthHandler::class => AuthHandlerFactory::class,
                 ContactsHandler::class => ContactsHandlerFactory::class,
                 UnisenderContactHandler::class => UnisenderContactHandlerFactory::class,
+                SendHandler::class => SendHandlerFactory::class, 
             ],
         ];
     }
