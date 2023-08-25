@@ -32,7 +32,7 @@ class AuthService extends AmoApiService
         if ($accountId == 0 || !is_numeric($accountId) || empty($accountId)) {
             return [
                 'status' => 'error',
-                'error_message' => 'Not a valid ID'
+                'error_message' => 'Not a valid ID',
             ];
         }
 

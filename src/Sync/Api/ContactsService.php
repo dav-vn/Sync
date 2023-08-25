@@ -30,7 +30,7 @@ class ContactsService extends AmoApiService
         if ($userId == 0 || !is_numeric($userId) || empty($userId)) {
             return [
                 'status' => 'error',
-                'error_message' => 'Not a valid ID'
+                'error_message' => 'Not a valid ID',
             ];
         }
 
