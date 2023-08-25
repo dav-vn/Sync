@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Sync\Factories;
 
-use AmoCRM\EntitiesServices\Contacts;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sync\Handlers\AuthHandler;
 use Sync\Handlers\ContactsHandler;
 
 /**

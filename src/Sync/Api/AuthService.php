@@ -27,7 +27,7 @@ class AuthService extends AmoApiService
      */
     public function auth(array $queryParams)
     {
-        $accountId= $queryParams['id'];
+        $accountId = $queryParams['id'];
 
         if ($accountId == 0 || !is_numeric($accountId) || empty($accountId)) {
             return [
@@ -35,7 +35,6 @@ class AuthService extends AmoApiService
                 'error_message' => 'Not a valid ID'
             ];
         }
-
 
         if (strpos(file_get_contents($_ENV['TOKENS_PATH']), $accountId)) {
             $accessToken = $this->readToken(intval($accountId));

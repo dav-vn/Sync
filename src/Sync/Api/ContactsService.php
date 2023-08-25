@@ -107,7 +107,6 @@ class ContactsService extends AmoApiService
                 ]);
             }
 
-
             if (!empty($contactsData)) {
                 foreach ($contactsData as $contacts) {
                     $name = $contacts->{'name'};
