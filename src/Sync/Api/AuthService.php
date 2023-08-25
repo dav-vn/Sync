@@ -4,7 +4,10 @@ namespace Sync\Api;
 
 use Exception;
 use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use Throwable;
+
+session_start();
 
 /**
  * Class AuthService.
@@ -16,22 +19,49 @@ class AuthService extends AmoApiService
     /** @var string Базовый домен авторизации. */
     private const TARGET_DOMAIN = 'kommo.com';
 
-    /** @var string Файл хранения токенов. */
-    protected const TOKENS_FILE = './tokens.json';
-
     /**
      * Получение токена досутпа для аккаунта.
      *
      * @param array $queryParams Входные GET параметры.
-     * @return string Имя авторизованного аккаунта.
+     * @return string | array  Имя авторизованного аккаунта | Вывод ошибки
      */
-    public function auth(array $queryParams): string
+    public function auth(array $queryParams)
     {
-        session_start();
+        $accountId = $queryParams['id'];
 
-        /** Занесение системного идентификатора в сессию для реализации OAuth2.0. */
-        if (!empty($queryParams['id'])) {
-            $_SESSION['service_id'] = $queryParams['id'];
+        if ($accountId == 0 || !is_numeric($accountId) || empty($accountId)) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Not a valid ID',
+            ];
+        }
+
+        if (strpos(file_get_contents($_ENV['TOKENS_PATH']), $accountId)) {
+            $accessToken = $this->readToken(intval($accountId));
+
+            $this
+                ->apiClient
+                ->setAccessToken($accessToken)
+                ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
+                ->onAccessTokenRefresh(
+                    function (AccessTokenInterface $accessToken, string $baseDomain) use ($accountId) {
+                        $this->saveToken(
+                            $accountId,
+                            [
+                                'accessToken' => $accessToken->getToken(),
+                                'refreshToken' => $accessToken->getRefreshToken(),
+                                'expires' => $accessToken->getExpires(),
+                                'baseDomain' => $baseDomain,
+                            ]
+                        );
+                    }
+                );
+
+            return $this
+                ->apiClient
+                ->getOAuthClient()
+                ->getResourceOwner($accessToken)
+                ->getName();
         }
 
         if (isset($queryParams['referer'])) {
@@ -117,13 +147,13 @@ class AuthService extends AmoApiService
      * @param array $token Токен доступа Api.
      * @return void
      */
-    private function saveToken(int $serviceId, array $token): void
+    public function saveToken(int $serviceId, array $token): void
     {
-        $tokens = file_exists(self::TOKENS_FILE)
-            ? json_decode(file_get_contents(self::TOKENS_FILE), true)
+        $tokens = file_exists($_ENV['TOKENS_PATH'])
+            ? json_decode(file_get_contents($_ENV['TOKENS_PATH']), true)
             : [];
         $tokens[$serviceId] = $token;
-        file_put_contents(self::TOKENS_FILE, json_encode($tokens, JSON_PRETTY_PRINT));
+        file_put_contents($_ENV['TOKENS_PATH'], json_encode($tokens, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -135,13 +165,13 @@ class AuthService extends AmoApiService
     public function readToken(int $serviceId): AccessToken
     {
         try {
-            if (!file_exists(self::TOKENS_FILE)) {
+            if (!file_exists($_ENV['TOKENS_PATH'])) {
                 throw new Exception('Tokens file not found.');
             }
 
-            $accesses = json_decode(file_get_contents(self::TOKENS_FILE), true);
+            $accesses = json_decode(file_get_contents($_ENV['TOKENS_PATH']), true);
             if (empty($accesses[$serviceId])) {
-                throw new Exception("Unknown account name \"$serviceId\".");
+                throw new Exception();
             }
 
             return new AccessToken($accesses[$serviceId]);
@@ -150,3 +180,5 @@ class AuthService extends AmoApiService
         }
     }
 }
+
+

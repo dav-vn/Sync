@@ -6,23 +6,23 @@ namespace Sync\Factories;
 
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sync\Handlers\ContactsHandler;
+use Sync\Handlers\SendHandler;
 
 /**
- * Class ContactHandlerFactory
+ * Class SendHandlerFactory
  *
  * @package Sync\Factories\
  */
-class ContactsHandlerFactory
+class SendHandlerFactory
 {
     /**
-     * Возврат нового экземпляра ContactHandler
+     * Возврат нового экземпляра SendHandler
      *
      * @param ContainerInterface $container
      * @return RequestHandlerInterface
      */
     public function __invoke(ContainerInterface $container): RequestHandlerInterface
     {
-        return new ContactsHandler();
+        return new SendHandler();
     }
 }

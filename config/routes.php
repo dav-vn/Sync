@@ -42,4 +42,5 @@ return static function (Application $app, MiddlewareFactory $factory, ContainerI
     $app->get('/auth', \Sync\Handlers\AuthHandler::class, 'auth');
     $app->get('/contacts', \Sync\Handlers\ContactsHandler::class, 'contacts');
     $app->get('/contact', \Sync\Handlers\UnisenderContactHandler::class, 'contact');
+    $app->get('/send', \Sync\Handlers\SendHandler::class, 'send');
 };

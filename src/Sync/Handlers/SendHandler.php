@@ -8,29 +8,30 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sync\Api\ContactsService;
+use Sync\Api\SendService;
 
 /**
- * Class ContactHandler
+ * Class SendHandler
  *
  * @package Sync\Handlers\
  */
-class ContactsHandler implements RequestHandlerInterface
+class SendHandler implements RequestHandlerInterface
 {
     /**
-     * Обработка HTTP-запроса /contacts
+     * Обработка HTTP-запроса /send
      *
      * @param ServerRequestInterface $request
      * @return ResponseInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $apiService = new ContactsService();
+        $sendService = new SendService();
 
         return new JsonResponse([
-            $apiService->get($request->getQueryParams()['id']),
+            $sendService->sendContacts($request->getQueryParams()['id']),
         ]);
     }
 }
+
 
 
