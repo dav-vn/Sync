@@ -1,35 +1,19 @@
+
 <?php
 
-use Phpmig\Adapter;
-use Illuminate\Container\Container;
-use Illuminate\Database\Capsule\Manager as Capsule;
+use \Phpmig\Adapter;
 
-$container = new Container();
+$container = new ArrayObject();
 
-$container['config'] = [
-    'host'      => '127.0.0.1',
-    'port' => '3306',
-    'prefix'    => '',
-    'driver' => 'mysql',
-    'username' => 'admin',
-    'password' => '111111',
-    'database' => 'app_db',
-    'charset' => 'utf8',
-    'collation' => 'utf8_unicode_ci',
-];
+// replace this with a better Phpmig\Adapter\AdapterInterface
+$container['phpmig.adapter'] = new Adapter\File\Flat(__DIR__ . DIRECTORY_SEPARATOR . 'migrations/.migrations.log');
 
-$container['db'] = function ($c) {
-    $capsule = new Capsule();
-    $capsule->addConnection($c['config']);
-    $capsule->setAsGlobal();
-    $capsule->bootEloquent();
-
-    return $capsule;
-};
-
-$container['phpmig.adapter'] = function($c) {
-    return new Adapter\Illuminate\Database($c['db'], 'migrations');
-};
 $container['phpmig.migrations_path'] = __DIR__ . DIRECTORY_SEPARATOR . 'migrations';
+
+// You can also provide an array of migration files
+// $container['phpmig.migrations'] = array_merge(
+//     glob('migrations_1/*.php'),
+//     glob('migrations_2/*.php')
+// );
 
 return $container;
