@@ -8,9 +8,11 @@ use Illuminate\Database\Capsule\Manager;
 class Accesses extends Migration
 {
     /**
-     * Do the migration
+     * Создать миграцию
+     *
+     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Manager::schema()->create('accesses', function ($table) {
             $table->id();
@@ -24,9 +26,11 @@ class Accesses extends Migration
     }
 
     /**
-     * Undo the migration
+     * Откатить миграцию
+     *
+     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Manager::schema()->dropIfExists('accesses');
     }

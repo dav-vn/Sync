@@ -13,7 +13,9 @@ use Illuminate\Database\Capsule\Manager;
 class Accounts extends Migration
 {
     /**
-     * Do the migration
+     * Создать миграцию
+     *
+     * @return void
      */
     public function up(): void
     {
@@ -25,7 +27,9 @@ class Accounts extends Migration
     }
 
     /**
-     * Undo the migration
+     * Откатить миграцию
+     *
+     * @return void
      */
     public function down(): void
     {

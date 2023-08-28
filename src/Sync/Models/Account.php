@@ -3,6 +3,7 @@
 namespace Sync\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -33,11 +34,11 @@ class Account extends Model
     /**
      * Связь с таблицей связывающей аккаунты и интеграции (многие ко многим)
      *
-     * @return HasMany
+     * @return BelongsToMany
      */
-    public function accountsIntegrations(): HasMany
+    public function integrations(): BelongsToMany
     {
-        return $this->hasMany(AccountIntegration::class);
+        return $this->belongsToMany(Integration::class);
     }
 
     /**

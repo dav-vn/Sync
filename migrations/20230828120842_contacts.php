@@ -8,9 +8,11 @@ use Illuminate\Database\Capsule\Manager;
 class Contacts extends Migration
 {
     /**
-     * Do the migration
+     * Создать миграцию
+     *
+     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Manager::schema()->create('contacts', function ($table) {
             $table->id();
@@ -22,9 +24,11 @@ class Contacts extends Migration
     }
 
     /**
-     * Undo the migration
+     * Откатить миграцию
+     *
+     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Manager::schema()->dropIfExists('contacts');
     }
