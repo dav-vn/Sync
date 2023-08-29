@@ -30,7 +30,6 @@ class AddIntegrationHandler implements RequestHandlerInterface
     {
         $integrationService = new IntegrationService;
 
-
         return new JsonResponse([
             $integrationService->addIntegration($request->getParsedBody()),
         ]);
