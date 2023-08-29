@@ -2,8 +2,6 @@
 
 namespace Sync\Api;
 
-use Sync\Models\Contact;
-
 
 /**
  * Class SendService.
@@ -12,8 +10,7 @@ use Sync\Models\Contact;
  */
 class SendService extends UnisenderApiService
 {
-    /** @var $databaseConnect DatabaseConnectService Подключение к базе данных */
-    private DatabaseConnectService $databaseConnect;
+    private ContactsService $contactService;
 
     /**
      * Отправка контактов в Unisender из БД
@@ -23,19 +20,28 @@ class SendService extends UnisenderApiService
      */
     public function sendContacts(string $userId): array
     {
-        $this->databaseConnect = new DatabaseConnectService;
-        $contacts = Contact::where('amo_id', intval($userId))
-            ->get()
-            ->toArray();
+        $this->contactService = new ContactsService();
+
+
+        $contactsList = $this
+            ->contactService
+            ->get($userId);
+
+        $this->contactService->save($contactsList, intval($userId));
 
         $result = [];
         $data = [];
 
-        foreach ($contacts as $contact) {
-            if (!empty($contact['email'])) {
-                $data[] = [$contact['email'], $contact['name']];
+        foreach ($contactsList as $contacts) {
+            foreach ($contacts as $contact) {
+                if (!empty($contact['email'])) {
+                    foreach ($contact['email'] as $email) {
+                        $data[] = [$email, $contact['name']];
+                    }
+                }
             }
         }
+
 
         $request = array(
             'field_names' => ['email', 'Name'],

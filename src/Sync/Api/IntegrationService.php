@@ -2,8 +2,6 @@
 
 namespace Sync\Api;
 
-
-use Sync\Models\Access;
 use Sync\Models\Account;
 use Sync\Models\Integration;
 
@@ -31,7 +29,6 @@ class IntegrationService
         ]);
 
         $account->integrations()->attach($integration);
-
         $result = Integration::where('integration_id', $integrationData)->first();
 
         if (!empty($result)) {

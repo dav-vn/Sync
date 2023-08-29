@@ -84,6 +84,7 @@ class AuthService extends AmoApiService
                     if (!isset($queryParams['code'])) {
                         $state = bin2hex(random_bytes(16));
                         $_SESSION['oauth2state'] = $state;
+
                         if (isset($queryParams['button'])) {
                             echo $this
                                 ->apiClient
@@ -141,6 +142,7 @@ class AuthService extends AmoApiService
                 }
 
                 session_abort();
+
                 return $this
                     ->apiClient
                     ->getOAuthClient()
@@ -178,7 +180,6 @@ class AuthService extends AmoApiService
      * @param int $serviceId Системный идентификатор аккаунта.
      * @return AccessToken
      */
-
     public function readToken(int $serviceId): AccessToken
     {
         try {

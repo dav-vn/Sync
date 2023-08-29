@@ -18,7 +18,6 @@ use Sync\Api\AuthService;
  */
 class AuthHandler implements RequestHandlerInterface
 {
-
     /**
      * Обработка HTTP-запроса /auth
      *

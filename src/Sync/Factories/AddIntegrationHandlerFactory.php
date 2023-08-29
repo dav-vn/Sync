@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sync\Factories;
 
 use Sync\Handlers\AddIntegrationHandler;
-use Sync\Handlers\SumHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 

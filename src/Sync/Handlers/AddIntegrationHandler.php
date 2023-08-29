@@ -9,7 +9,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sync\Api\IntegrationService;
-use Sync\Models\Integration;
 
 /**
  * Class AddIntegrationHandler
@@ -18,8 +17,6 @@ use Sync\Models\Integration;
  */
 class AddIntegrationHandler implements RequestHandlerInterface
 {
-
-
     /**
      * Обработка HTTP-запроса /auth
      *
