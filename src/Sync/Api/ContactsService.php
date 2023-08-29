@@ -133,9 +133,16 @@ class ContactsService extends AmoApiService
         return $contactsList;
     }
 
-    public function save(array $contactsPages, int $userId): void
+    /**
+     * Сохранение массива контактов в БД
+     *
+     * @param array $contactsList
+     * @param int $userId
+     * @return void
+     */
+    public function save(array $contactsList, int $userId): void
     {
-        foreach ($contactsPages as $contacts) {
+        foreach ($contactsList as $contacts) {
             foreach ($contacts as $contact) {
                 $emails = $contact['email'];
                 foreach ($emails as $email) {

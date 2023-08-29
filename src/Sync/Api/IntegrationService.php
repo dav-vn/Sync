@@ -12,6 +12,7 @@ use Sync\Models\Integration;
  */
 class IntegrationService
 {
+    /** @var DatabaseConnectService Подключение к базе данных */
     protected DatabaseConnectService $databaseConnect;
 
     public function addIntegration(array $integrationData): array

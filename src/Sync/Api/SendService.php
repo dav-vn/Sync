@@ -10,6 +10,7 @@ namespace Sync\Api;
  */
 class SendService extends UnisenderApiService
 {
+    /** @var ContactsService Сервис получения контактов из amoCRM */
     private ContactsService $contactService;
 
     /**
