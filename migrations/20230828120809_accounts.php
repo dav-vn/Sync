@@ -21,8 +21,8 @@ class Accounts extends Migration
     {
         Manager::schema()->create('accounts', function ($table) {
             $table->id();
-            $table->string('name');
-            $table->timestamps();
+            $table->unsignedBigInteger('amo_id')->index();
+            $table->string('name')->nullable();
         });
     }
 

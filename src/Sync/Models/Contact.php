@@ -12,13 +12,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Contact extends Model
 {
+    /** @var bool отключение временных меток */
+    public $timestamps = false;
+
     /** @var array доступны для массового присваивания */
     protected $fillable = [
         'id',
-        'account_id',
         'name',
-        'created_at',
-        'updated_at',
+        'email',
+        'amo_id',
     ];
 
     /**

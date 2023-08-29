@@ -16,14 +16,15 @@ class Accesses extends Migration
     {
         Manager::schema()->create('accesses', function ($table) {
             $table->id();
-            $table->unsignedBigInteger('account_id');
+            $table->unsignedBigInteger('amo_id');
             $table->string('base_domain');
             $table->text('access_token');
             $table->text('refresh_token');
             $table->string('expires');
-            $table->text('api_key');
+            $table->text('api_key')->nullable();
+            $table->timestamps();
 
-            $table->foreign('account_id')->references('id')->on('accounts');
+            $table->foreign('amo_id')->references('amo_id')->on('accounts');
         });
     }
 

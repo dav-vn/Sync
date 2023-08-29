@@ -15,10 +15,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Account extends Model
 {
+    /** @var bool отключение временных меток */
+    public $timestamps = false;
+
     /** @var array защищенные элементы таблицы */
     protected $guarded = [
         'id',
         'name',
+    ];
+
+    /** @var array доступные для массового присваивания */
+    protected $fillable = [
+        'amo_id'
     ];
 
     /**

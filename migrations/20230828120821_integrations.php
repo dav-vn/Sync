@@ -24,7 +24,6 @@ class Integrations extends Migration
             $table->string('integration_id')->unique();
             $table->string('integration_secret');
             $table->string('redirect_url');
-            $table->timestamps();
         });
     }
 

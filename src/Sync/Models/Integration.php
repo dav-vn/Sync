@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Integration extends Model
 {
-    /** @var array защита от массового присваивания */
-    protected $guarded = [
+    /** @var bool отключение временных меток */
+    public $timestamps = false;
+
+    /** @var array доступные для массового присваивания */
+    protected $fillable = [
         'id',
         'name',
         'integration_id',
