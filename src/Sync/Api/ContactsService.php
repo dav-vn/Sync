@@ -8,9 +8,10 @@ use AmoCRM\Exceptions\AmoCRMoAuthApiException;
 use AmoCRM\Filters\ContactsFilter;
 use Laminas\Diactoros\Response\JsonResponse;
 use League\OAuth2\Client\Token\AccessTokenInterface;
+use Sync\Models\Contact;
 
 /**
- * Class SendService.
+ * Class ContactsService.
  *
  * @package Sync\Api
  */
@@ -125,10 +126,28 @@ class ContactsService extends AmoApiService
                     ];
                 }
 
-                $result[] = $pageData;
+                $contactsPages[] = $pageData;
+
+                $this->save($contactsPages, $userId);
             }
         }
 
-        return $result;
+        return $contactsPages;
+    }
+
+    public function save(array $contactsPages, int $userId): void
+    {
+        foreach ($contactsPages as $contacts) {
+            foreach ($contacts as $contact) {
+                $emails = $contact['email'];
+                foreach ($emails as $email) {
+                    Contact::updateOrCreate([
+                        'amo_id' => $userId,
+                        'name' => $contact['name'],
+                        'email' => $email,
+                    ]);
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Sync\Api;
 
+use Sync\Models\Contact;
+
+
 /**
  * Class SendService.
  *
@@ -9,52 +12,40 @@ namespace Sync\Api;
  */
 class SendService extends UnisenderApiService
 {
-    /** @var $contactService ContactsService Сервис получения списка контактов */
-    protected ContactsService $contactService;
+    /** @var $databaseConnect DatabaseConnectService Подключение к базе данных */
+    private DatabaseConnectService $databaseConnect;
 
     /**
-     * Получение токена досутпа для аккаунта.
+     * Отправка контактов в Unisender из БД
+     *
+     * @param string $userId
      * @return array Ответ на запрос о выгрузке контактов в Unisender.
      */
     public function sendContacts(string $userId): array
     {
-        $this->contactService = new ContactsService();
-        $contactsList = $this
-            ->contactService
-            ->get($userId);
+        $this->databaseConnect = new DatabaseConnectService;
+        $contacts = Contact::where('amo_id', intval($userId))
+            ->get()
+            ->toArray();
 
         $result = [];
         $data = [];
 
-        foreach ($contactsList as $contacts) {
-            foreach ($contacts as $contact) {
-                if (!empty($contact['email'])) {
-                    foreach ($contact['email'] as $email) {
-                        $data[] = [$email, $contact['name']];
-                    }
-                }
+        foreach ($contacts as $contact) {
+            if (!empty($contact['email'])) {
+                $data[] = [$contact['email'], $contact['name']];
             }
-
-            $request = array(
-                'field_names' => ['email', 'Name'],
-                'data' => $data,
-            );
-
-            $result[] = $this
-                ->unisenderApi
-                ->importContacts($request);
         }
 
-        if (!isset($result['error'])) {
-            return [
-                'status' => 'success',
-                'message' => $result,
-            ];
-        } else {
-            return [
-                'status' => 'error',
-                'error_message' => $result,
-            ];
-        }
+        $request = array(
+            'field_names' => ['email', 'Name'],
+            'data' => $data,
+        );
+
+        $result[] = $this
+            ->unisenderApi
+            ->importContacts($request);
+
+        return $result;
     }
 }
