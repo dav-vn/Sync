@@ -126,13 +126,11 @@ class ContactsService extends AmoApiService
                     ];
                 }
 
-                $contactsPages[] = $pageData;
-
-                $this->save($contactsPages, $userId);
+                $contactsList[] = $pageData;
             }
         }
 
-        return $contactsPages;
+        return $contactsList;
     }
 
     public function save(array $contactsPages, int $userId): void
