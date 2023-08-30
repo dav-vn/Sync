@@ -5,20 +5,19 @@ namespace Sync\Api;
 use Exception;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
+use Sync\Interfaces\AuthInterface;
 use Throwable;
 use Sync\Models\Access;
-
 
 /**
  * Class AuthService.
  *
  * @package Sync\Api
  */
-class AuthService extends AmoApiService
+class AuthService extends AmoApiService implements AuthInterface
 {
     /** @var string Базовый домен авторизации. */
     private const TARGET_DOMAIN = 'kommo.com';
-
 
     /**
      * Получение токена досутпа для аккаунта.
@@ -30,20 +29,22 @@ class AuthService extends AmoApiService
     {
         session_start();
 
-        if (isset($queryParams['id'])) {
+        if (
+            $queryParams['id'] == 0 ||
+            !is_numeric($queryParams['id'])
+        ) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Not a valid ID',
+            ];
+        } else {
             $accountId = intval($queryParams['id']);
+        }
+
+        if (!empty($accountId)) {
             $accessToken = Access::where('amo_id', $accountId)->first();
 
-            if (
-                $queryParams['id'] == 0 ||
-                !is_numeric($queryParams['id']) ||
-                empty($queryParams['id'])
-            ) {
-                return [
-                    'status' => 'error',
-                    'error_message' => 'Not a valid ID',
-                ];
-            } elseif (!empty($accessToken)) {
+            if (!empty($accessToken)) {
                 $accessToken = $this->readToken(intval($queryParams['id']));
 
                 $this
@@ -69,87 +70,75 @@ class AuthService extends AmoApiService
                     ->getOAuthClient()
                     ->getResourceOwner($accessToken)
                     ->getName();
-            } else {
-                $_SESSION['service_id'] = $queryParams['id'];
+            }
 
-                if (isset($queryParams['referer'])) {
-                    $this
-                        ->apiClient
-                        ->setAccountBaseDomain($queryParams['referer'])
-                        ->getOAuthClient()
-                        ->setBaseDomain($queryParams['referer']);
-                }
+        }
+        elseif (empty($accountId)) {
+            return [
+                'status' => 'error',
+                'error_message' => 'ID is unset',
+            ];
+        } else {
+            $_SESSION['service_id'] = $queryParams['id'];
 
-                try {
-                    if (!isset($queryParams['code'])) {
-                        $state = bin2hex(random_bytes(16));
-                        $_SESSION['oauth2state'] = $state;
-
-                        if (isset($queryParams['button'])) {
-                            echo $this
-                                ->apiClient
-                                ->getOAuthClient()
-                                ->setBaseDomain(self::TARGET_DOMAIN)
-                                ->getOAuthButton([
-                                    'title' => 'Установить интеграцию',
-                                    'compact' => true,
-                                    'class_name' => 'className',
-                                    'color' => 'default',
-                                    'error_callback' => 'handleOauthError',
-                                    'state' => $state,
-                                ]);
-                        } else {
-                            $authorizationUrl = $this
-                                ->apiClient
-                                ->getOAuthClient()
-                                ->setBaseDomain(self::TARGET_DOMAIN)
-                                ->getAuthorizeUrl([
-                                    'state' => $state,
-                                    'mode' => 'post_message',
-                                ]);
-                            header('Location: ' . $authorizationUrl);
-                        }
-                        die;
-                    } elseif (
-                        empty($queryParams['state']) ||
-                        empty($_SESSION['oauth2state']) ||
-                        ($queryParams['state'] !== $_SESSION['oauth2state'])
-                    ) {
-                        unset($_SESSION['oauth2state']);
-                        exit('Invalid state');
-                    }
-                } catch (Throwable $e) {
-                    die($e->getMessage());
-                }
-
-                try {
-                    $accessToken = $this
-                        ->apiClient
-                        ->getOAuthClient()
-                        ->setBaseDomain($queryParams['referer'])
-                        ->getAccessTokenByCode($queryParams['code']);
-
-                    if (!$accessToken->hasExpired()) {
-                        $this->saveToken($accountId, [
-                            'base_domain' => $this->apiClient->getAccountBaseDomain(),
-                            'access_token' => $accessToken->getToken(),
-                            'refresh_token' => $accessToken->getRefreshToken(),
-                            'expires' => $accessToken->getExpires(),
-                        ]);
-                    }
-                } catch (Throwable $e) {
-                    die($e->getMessage());
-                }
-
-                session_abort();
-
-                return $this
+            if (isset($queryParams['referer'])) {
+                $this
                     ->apiClient
+                    ->setAccountBaseDomain($queryParams['referer'])
                     ->getOAuthClient()
-                    ->getResourceOwner($accessToken)
-                    ->getName();
+                    ->setBaseDomain($queryParams['referer']);
+            }
+
+            try {
+                if (!isset($queryParams['code'])) {
+                    $state = bin2hex(random_bytes(16));
+                    $_SESSION['oauth2state'] = $state;
+
+                    if (isset($queryParams['button'])) {
+                        echo $this
+                            ->apiClient
+                            ->getOAuthClient()
+                            ->setBaseDomain(self::TARGET_DOMAIN)
+                            ->getOAuthButton([
+                                'title' => 'Установить интеграцию',
+                                'compact' => true,
+                                'class_name' => 'className',
+                                'color' => 'default',
+                                'error_callback' => 'handleOauthError',
+                                'state' => $state,
+                            ]);
+                    } else {
+                        $authorizationUrl = $this
+                            ->apiClient
+                            ->getOAuthClient()
+                            ->setBaseDomain(self::TARGET_DOMAIN)
+                            ->getAuthorizeUrl([
+                                'state' => $state,
+                                'mode' => 'post_message',
+                            ]);
+                        header('Location: ' . $authorizationUrl);
+                    }
+                    die;
+                }
+                elseif (
+                    empty($queryParams['state']) ||
+                    empty($_SESSION['oauth2state']) ||
+                    ($queryParams['state'] !== $_SESSION['oauth2state'])
+                ) {
+                    unset($_SESSION['oauth2state']);
+                    exit('Invalid state');
+                }
+            } catch (Throwable $e) {
+                die($e->getMessage());
             }
         }
+        session_abort();
+
+        return $this
+            ->apiClient
+            ->getOAuthClient()
+            ->getResourceOwner($accessToken)
+            ->getName();
     }
 
     /**
