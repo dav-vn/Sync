@@ -43,7 +43,7 @@ return static function (Application $app, MiddlewareFactory $factory, ContainerI
     $app->get('/contacts', \Sync\Handlers\ContactsHandler::class, 'contacts');
     $app->get('/contact', \Sync\Handlers\UnisenderContactHandler::class, 'contact');
     $app->get('/send', \Sync\Handlers\SendHandler::class, 'send');
-    $app->get('/database/accounts', \Sync\Api\GetAccountService::class, 'database/accounts');
+    $app->get('/database/accounts', \Sync\Handlers\GetAccountHandler::class, 'database/accounts');
 
     $app->post('/database/add_integration', \Sync\Handlers\AddIntegrationHandler::class, 'database/add_integration');
 };
