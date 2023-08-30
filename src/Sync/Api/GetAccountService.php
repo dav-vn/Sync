@@ -20,12 +20,19 @@ class GetAccountService
 
         $accountsData = Account::with(['integrations', 'contacts', 'accesses'])->get()->toArray();
 
+        if(empty($accountsData)) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Couldt find accounts',
+            ];
+        }
+
         $formattedAccounts = [
             'status' => 'success',
             'data' => [
                 'accounts' => [
                     'all' => [],
-                    'with_accesses' => []
+                    'with_accesses' => [],
                 ]
             ]
         ];
@@ -46,11 +53,11 @@ class GetAccountService
                 'amo_id' => $accountData['amo_id'],
                 'integration_id' => $integrations,
                 'contacts_count' => $contactsCount,
-                'api_key' => $apiKey
+                'api_key' => $apiKey,
             ];
 
             $formattedAccounts['data']['accounts']['all'][] = [
-                $accountName => $accountInfo
+                $accountName => $accountInfo,
             ];
 
             if (!empty($accountData['accesses'])) {
