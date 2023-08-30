@@ -8,15 +8,14 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-
-use Sync\Api\AuthService;
+use Sync\Api\IntegrationService;
 
 /**
- * Class AuthHandler
+ * Class AddIntegrationHandler
  *
  * @package Sync\Handlers\
  */
-class AuthHandler implements RequestHandlerInterface
+class AddIntegrationHandler implements RequestHandlerInterface
 {
     /**
      * Обработка HTTP-запроса /auth
@@ -26,12 +25,10 @@ class AuthHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $apiService = new AuthService();
-
-        $username = $apiService->auth($request->getQueryParams());
+        $integrationService = new IntegrationService;
 
         return new JsonResponse([
-            'name' => $username,
+            $integrationService->addIntegration($request->getParsedBody()),
         ]);
     }
 }

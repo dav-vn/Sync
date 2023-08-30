@@ -5,7 +5,7 @@ require_once 'bootstrap.php';
 use Phpmig\Migration\Migration;
 use Illuminate\Database\Capsule\Manager;
 
-class IntegrationAccount extends Migration
+class AccountIntegration extends Migration
 {
     /**
      * Создать миграцию
@@ -14,11 +14,10 @@ class IntegrationAccount extends Migration
      */
     public function up(): void
     {
-        Manager::schema()->create('integration_account', function ($table) {
+        Manager::schema()->create('account_integration', function ($table) {
             $table->id();
             $table->unsignedBigInteger('account_id');
             $table->unsignedBigInteger('integration_id');
-            $table->timestamps();
 
             $table->foreign('account_id')->references('id')->on('accounts');
             $table->foreign('integration_id')->references('id')->on('integrations');
@@ -32,6 +31,6 @@ class IntegrationAccount extends Migration
      */
     public function down(): void
     {
-        Manager::schema()->dropIfExists('integration_account');
+        Manager::schema()->dropIfExists('account_integration');
     }
 }

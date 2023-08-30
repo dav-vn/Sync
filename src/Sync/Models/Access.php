@@ -12,17 +12,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Access extends Model
 {
+    /** @var bool отключение временных меток */
+    public $timestamps = false;
+
     /** @var array защищенные элементы таблицы */
     protected $guarded = [
         'id',
-        'account_id',
         'base_domain',
         'access_token',
         'refresh_token',
         'expires',
         'api_key',
-        'created_at',
-        'updated_at',
+    ];
+
+    /** @var array разрешенные для Mass Assigment */
+    protected $fillable = [
+        'amo_id',
     ];
 
     /**

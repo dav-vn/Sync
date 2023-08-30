@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-
 /**
  * Class Account
  *
@@ -15,10 +14,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Account extends Model
 {
+    /** @var bool отключение временных меток */
+    public $timestamps = false;
+
     /** @var array защищенные элементы таблицы */
     protected $guarded = [
         'id',
         'name',
+    ];
+
+    /** @var array доступные для массового присваивания */
+    protected $fillable = [
+        'amo_id'
     ];
 
     /**
@@ -28,7 +35,7 @@ class Account extends Model
      */
     public function contacts(): HasMany
     {
-        return $this->hasMany(Contact::class);
+        return $this->hasMany(Contact::class, 'amo_id', 'amo_id');
     }
 
     /**
@@ -38,7 +45,7 @@ class Account extends Model
      */
     public function integrations(): BelongsToMany
     {
-        return $this->belongsToMany(Integration::class);
+        return $this->belongsToMany(Integration::class, 'account_integration', 'account_id', 'integration_id');
     }
 
     /**
@@ -48,6 +55,6 @@ class Account extends Model
      */
     public function accesses(): HasOne
     {
-        return $this->hasOne(Access::class);
+        return $this->hasOne(Access::class, 'amo_id', 'amo_id');
     }
 }

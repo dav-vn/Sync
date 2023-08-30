@@ -2,6 +2,7 @@
 
 namespace Sync\Api;
 
+
 /**
  * Class SendService.
  *
@@ -9,19 +10,25 @@ namespace Sync\Api;
  */
 class SendService extends UnisenderApiService
 {
-    /** @var $contactService ContactsService Сервис получения списка контактов */
-    protected ContactsService $contactService;
+    /** @var ContactsService Сервис получения контактов из amoCRM */
+    private ContactsService $contactService;
 
     /**
-     * Получение токена досутпа для аккаунта.
+     * Отправка контактов в Unisender из БД
+     *
+     * @param string $userId
      * @return array Ответ на запрос о выгрузке контактов в Unisender.
      */
     public function sendContacts(string $userId): array
     {
         $this->contactService = new ContactsService();
+
+
         $contactsList = $this
             ->contactService
             ->get($userId);
+
+        $this->contactService->save($contactsList, intval($userId));
 
         $result = [];
         $data = [];
@@ -34,27 +41,18 @@ class SendService extends UnisenderApiService
                     }
                 }
             }
-
-            $request = array(
-                'field_names' => ['email', 'Name'],
-                'data' => $data,
-            );
-
-            $result[] = $this
-                ->unisenderApi
-                ->importContacts($request);
         }
 
-        if (!isset($result['error'])) {
-            return [
-                'status' => 'success',
-                'message' => $result,
-            ];
-        } else {
-            return [
-                'status' => 'error',
-                'error_message' => $result,
-            ];
-        }
+
+        $request = array(
+            'field_names' => ['email', 'Name'],
+            'data' => $data,
+        );
+
+        $result[] = $this
+            ->unisenderApi
+            ->importContacts($request);
+
+        return $result;
     }
 }

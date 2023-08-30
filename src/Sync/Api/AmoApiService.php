@@ -3,10 +3,7 @@
 namespace Sync\Api;
 
 use AmoCRM\Client\AmoCRMApiClient;
-use Symfony\Component\Dotenv\Dotenv;
-
-$dotenv = new Dotenv();
-$dotenv->load('./.env');
+use Sync\Models\Integration;
 
 /**
  * Class ApiService.
@@ -18,17 +15,24 @@ class AmoApiService
     /** @var AmoCRMApiClient AmoCRM клиент. */
     protected AmoCRMApiClient $apiClient;
 
+    /** @var DatabaseConnectService Подключение к базе данных */
+    protected DatabaseConnectService $connectDB;
+
     /**
      * AmoApiService constructor.
      */
     public function __construct()
     {
+        $this->connectDB = new DatabaseConnectService;
+        $integration = Integration::on()->find(1);
+
         $this->apiClient = new AmoCRMApiClient(
-            $_ENV['INTEGRATION_ID'],
-            $_ENV['INTEGRATION_SECRET'],
-            $_ENV['REDIRECT_URL'],
+            $integration->{'integration_id'},
+            $integration->{'integration_secret'},
+            $integration->{'redirect_url'},
         );
     }
 }
+
 
 
