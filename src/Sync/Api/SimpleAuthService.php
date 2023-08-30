@@ -26,7 +26,16 @@ class SimpleAuthService extends AmoApiService implements AuthInterface
         ) {
             return [
                 'status' => 'error',
-                'error_message' => 'Not a valid ID',
+                'error_message' => 'Not a valid authorization code',
+            ];
+        }
+        else if (
+            !empty($queryParams['referer']) ||
+            is_numeric($queryParams['code'])
+        ) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Not a valid url',
             ];
         }
 
@@ -42,11 +51,16 @@ class SimpleAuthService extends AmoApiService implements AuthInterface
 
         session_abort();
 
-        return $this
+        $accountName =  $this
             ->apiClient
             ->getOAuthClient()
             ->getResourceOwner($accessToken)
             ->getName();
+
+        return [
+            'status' => 'success',
+            'auth as' => $accountName
+        ];
     }
 }
 
