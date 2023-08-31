@@ -41,7 +41,7 @@ class WidgetService
         } else {
             return [
                 'status' => 'error',
-                'error_message' => 'Couldnt add api_key'
+                'error_message' => 'Couldnt add api_key',
             ];
         }
     }
