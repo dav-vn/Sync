@@ -46,4 +46,5 @@ return static function (Application $app, MiddlewareFactory $factory, ContainerI
     $app->get('/database/accounts', \Sync\Handlers\GetAccountHandler::class, 'database/accounts');
 
     $app->post('/database/add_integration', \Sync\Handlers\AddIntegrationHandler::class, 'database/add_integration');
+    $app->post('/widget', \Sync\Handlers\WidgetHandler::class, 'widget');
 };
