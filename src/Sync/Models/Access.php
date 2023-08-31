@@ -22,12 +22,12 @@ class Access extends Model
         'access_token',
         'refresh_token',
         'expires',
-        'api_key',
     ];
 
     /** @var array разрешенные для Mass Assigment */
     protected $fillable = [
         'amo_id',
+        'api_key',
     ];
 
     /**

@@ -15,6 +15,12 @@ class IntegrationService
     /** @var DatabaseConnectService Подключение к базе данных */
     protected DatabaseConnectService $databaseConnect;
 
+    /**
+     * Получение токена досутпа для аккаунта при наличии кода авторизации
+     *
+     * @param array $integrationData Входные POST параметры.
+     * @return array  Вывод строчки в БД добавленной интеграции | Вывод ошибки
+     */
     public function addIntegration(array $integrationData): array
     {
         $this->databaseConnect = new DatabaseConnectService;
