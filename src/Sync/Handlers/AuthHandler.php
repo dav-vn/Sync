@@ -28,10 +28,9 @@ class AuthHandler implements RequestHandlerInterface
     {
         $auth = new AuthService();
         $simpleAuth = new SimpleAuthService();
-
         $accountParams = $request->getQueryParams();
 
-        if (isset($accountParams['code'])) {
+        if (isset($accountParams['from_widget']) && isset($accountParams['code'])) {
             $result = $simpleAuth->auth($accountParams);
         } else {
             $result = $auth->auth($accountParams);
