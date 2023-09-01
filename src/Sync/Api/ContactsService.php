@@ -8,6 +8,7 @@ use AmoCRM\Exceptions\AmoCRMoAuthApiException;
 use AmoCRM\Filters\ContactsFilter;
 use Laminas\Diactoros\Response\JsonResponse;
 use League\OAuth2\Client\Token\AccessTokenInterface;
+use Sync\Models\Access;
 use Sync\Models\Contact;
 
 /**
@@ -23,11 +24,13 @@ class ContactsService extends AmoApiService
     /**
      * Получение ассоциативного массива с именами всех контактов
      * и имеющихся у них email адресов.
-     * @param string $userId
+     * @param array $queryParams
      * @return array | object возвращаем список из всех контактов | вывод ошибки в формате JSON
      */
-    public function get(string $userId)
+    public function get(array $queryParams)
     {
+        $userId = $queryParams['id'];
+
         if ($userId == 0 || !is_numeric($userId) || empty($userId)) {
             return [
                 'status' => 'error',
@@ -36,61 +39,37 @@ class ContactsService extends AmoApiService
         }
 
         $this->authService = new AuthService();
-        $accessToken = $this
-            ->authService
-            ->readToken(intval($userId));
+        $accessToken = Access::where('amo_id', intval($userId))->first();
 
-        $this
-            ->apiClient
-            ->setAccessToken($accessToken)
-            ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
-            ->onAccessTokenRefresh(
-                function (AccessTokenInterface $accessToken, string $baseDomain) use ($userId) {
-                    $this->authService->saveToken(
-                        $userId,
-                        [
-                            'accessToken' => $accessToken->getToken(),
-                            'refreshToken' => $accessToken->getRefreshToken(),
-                            'expires' => $accessToken->getExpires(),
-                            'baseDomain' => $baseDomain,
-                        ]
-                    );
-                }
-            );
+        if (!empty($accessToken)) {
+            $accessToken = $this
+                ->authService
+                ->readToken(intval($userId));
 
-        try {
-            $count = $this
+            $this
                 ->apiClient
-                ->contacts()
-                ->get()
-                ->count();
-        } catch (AmoCRMMissedTokenException $e) {
-            return new JsonResponse([
-                'status' => 'error',
-                'error_message' => 'Ошибка доступа к токену',
-            ]);
-        } catch (AmoCRMoAuthApiException $e) {
-            return new JsonResponse([
-                'status' => 'error',
-                'error_message' => 'Ошибка доступа к API',
-            ]);
-        } catch (AmoCRMApiException $e) {
-            return new JsonResponse([
-                'status' => 'error',
-                'error_message' => 'Ошибка вызова к API',
-            ]);
-        }
-
-        for ($i = 0; $i <= intdiv($count, 250); $i++) {
-            $contactsFilter = (new ContactsFilter())
-                ->setLimit(250)
-                ->setPage($i + 1);
+                ->setAccessToken($accessToken)
+                ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
+                ->onAccessTokenRefresh(
+                    function (AccessTokenInterface $accessToken, string $baseDomain) use ($userId) {
+                        $this->authService->saveToken(
+                            $userId,
+                            [
+                                'accessToken' => $accessToken->getToken(),
+                                'refreshToken' => $accessToken->getRefreshToken(),
+                                'expires' => $accessToken->getExpires(),
+                                'baseDomain' => $baseDomain,
+                            ]
+                        );
+                    }
+                );
 
             try {
-                $contactsData = $this
+                $count = $this
                     ->apiClient
                     ->contacts()
-                    ->get($contactsFilter);
+                    ->get()
+                    ->count();
             } catch (AmoCRMMissedTokenException $e) {
                 return new JsonResponse([
                     'status' => 'error',
@@ -108,29 +87,59 @@ class ContactsService extends AmoApiService
                 ]);
             }
 
-            if (!empty($contactsData)) {
-                foreach ($contactsData as $contacts) {
-                    $name = $contacts->{'name'};
-                    $emails = [];
-                    foreach ($contacts->{'custom_fields_values'} as $values) {
-                        if ($values->{'field_code'} === 'EMAIL') {
-                            foreach ($values->{'values'} as $value) {
-                                $emails[] = $value->{'value'};
-                            }
-                        }
-                    }
+            for ($i = 0; $i <= intdiv($count, 250); $i++) {
+                $contactsFilter = (new ContactsFilter())
+                    ->setLimit(250)
+                    ->setPage($i + 1);
 
-                    $pageData[] = [
-                        'name' => $name,
-                        'email' => !empty($emails) ? $emails : null,
-                    ];
+                try {
+                    $contactsData = $this
+                        ->apiClient
+                        ->contacts()
+                        ->get($contactsFilter);
+                } catch (AmoCRMMissedTokenException $e) {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'error_message' => 'Ошибка доступа к токену',
+                    ]);
+                } catch (AmoCRMoAuthApiException $e) {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'error_message' => 'Ошибка доступа к API',
+                    ]);
+                } catch (AmoCRMApiException $e) {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'error_message' => 'Ошибка вызова к API',
+                    ]);
                 }
 
-                $contactsList[] = $pageData;
-            }
-        }
+                if (!empty($contactsData)) {
+                    foreach ($contactsData as $contacts) {
+                        $name = $contacts->{'name'};
+                        $emails = [];
+                        foreach ($contacts->{'custom_fields_values'} as $values) {
+                            if ($values->{'field_code'} === 'EMAIL') {
+                                foreach ($values->{'values'} as $value) {
+                                    $emails[] = $value->{'value'};
+                                }
+                            }
+                        }
 
-        return $contactsList;
+                        $pageData[] = [
+                            'name' => $name,
+                            'email' => !empty($emails) ? $emails : null,
+                        ];
+                    }
+
+                    $contactsList[] = $pageData;
+                }
+            }
+
+            return $contactsList;
+        } else {
+            $this->authService->auth($queryParams);
+        }
     }
 
     /**
@@ -156,3 +165,4 @@ class ContactsService extends AmoApiService
         }
     }
 }
+

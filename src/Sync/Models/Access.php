@@ -17,17 +17,17 @@ class Access extends Model
 
     /** @var array защищенные элементы таблицы */
     protected $guarded = [
-        'id',
-        'base_domain',
-        'access_token',
-        'refresh_token',
-        'expires',
     ];
 
     /** @var array разрешенные для Mass Assigment */
     protected $fillable = [
         'amo_id',
         'api_key',
+        'base_domain',
+        'id',
+        'access_token',
+        'refresh_token',
+        'expires',
     ];
 
     /**

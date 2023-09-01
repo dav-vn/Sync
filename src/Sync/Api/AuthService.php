@@ -9,6 +9,8 @@ use Sync\Interfaces\AuthInterface;
 use Throwable;
 use Sync\Models\Access;
 
+session_start();
+
 /**
  * Class AuthService.
  *
@@ -27,60 +29,31 @@ class AuthService extends AmoApiService implements AuthInterface
      */
     public function auth(array $queryParams)
     {
-        session_start();
-
-        if (
-            $queryParams['id'] == 0 ||
-            !is_numeric($queryParams['id'])
-        ) {
-            return [
-                'status' => 'error',
-                'error_message' => 'Not a valid ID',
-            ];
-        } else {
-            $accountId = intval($queryParams['id']);
-        }
-
-        if (!empty($accountId)) {
-            $accessToken = Access::where('amo_id', $accountId)->first();
-
-            if (!empty($accessToken)) {
-                $accessToken = $this->readToken(intval($queryParams['id']));
-
-                $this
-                    ->apiClient
-                    ->setAccessToken($accessToken)
-                    ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
-                    ->onAccessTokenRefresh(
-                        function (AccessTokenInterface $accessToken, string $baseDomain) use ($accountId) {
-                            $this->saveToken(
-                                $accountId,
-                                [
-                                    'accessToken' => $accessToken->getToken(),
-                                    'refreshToken' => $accessToken->getRefreshToken(),
-                                    'expires' => $accessToken->getExpires(),
-                                    'baseDomain' => $baseDomain,
-                                ]
-                            );
-                        }
-                    );
-
-                return $this
-                    ->apiClient
-                    ->getOAuthClient()
-                    ->getResourceOwner($accessToken)
-                    ->getName();
-            }
-
-        }
-        elseif (empty($accountId)) {
-            return [
-                'status' => 'error',
-                'error_message' => 'ID is unset',
-            ];
-        } else {
+        if (!empty($queryParams['id'])) {
             $_SESSION['service_id'] = $queryParams['id'];
+            $accessToken = Access::where('amo_id', $_SESSION['service_id'])->first();
+        }
 
+        if (!empty($accessToken)) {
+            $accessToken = $this->readToken($_SESSION['service_id']);
+            $this
+                ->apiClient
+                ->setAccessToken($accessToken)
+                ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
+                ->onAccessTokenRefresh(
+                    function (AccessTokenInterface $accessToken, string $baseDomain) {
+                        $this->saveToken(
+                            $_SESSION['service_id'],
+                            [
+                                'accessToken' => $accessToken->getToken(),
+                                'refreshToken' => $accessToken->getRefreshToken(),
+                                'expires' => $accessToken->getExpires(),
+                                'baseDomain' => $baseDomain,
+                            ]
+                        );
+                    }
+                );
+        } else {
             if (isset($queryParams['referer'])) {
                 $this
                     ->apiClient
@@ -119,8 +92,7 @@ class AuthService extends AmoApiService implements AuthInterface
                         header('Location: ' . $authorizationUrl);
                     }
                     die;
-                }
-                elseif (
+                } elseif (
                     empty($queryParams['state']) ||
                     empty($_SESSION['oauth2state']) ||
                     ($queryParams['state'] !== $_SESSION['oauth2state'])
@@ -131,7 +103,25 @@ class AuthService extends AmoApiService implements AuthInterface
             } catch (Throwable $e) {
                 die($e->getMessage());
             }
+
+            try {
+                $accessToken = $this
+                    ->apiClient
+                    ->getOAuthClient()
+                    ->setBaseDomain($queryParams['referer'])
+                    ->getAccessTokenByCode($queryParams['code']);
+
+                $this->saveToken($_SESSION['service_id'], [
+                    'base_domain' => $this->apiClient->getAccountBaseDomain(),
+                    'access_token' => $accessToken->getToken(),
+                    'refresh_token' => $accessToken->getRefreshToken(),
+                    'expires' => $accessToken->getExpires(),
+                ]);
+            } catch (Throwable $e) {
+                die($e->getMessage());
+            }
         }
+
         session_abort();
 
         return $this
@@ -184,5 +174,7 @@ class AuthService extends AmoApiService implements AuthInterface
         }
     }
 }
+
+
 
 

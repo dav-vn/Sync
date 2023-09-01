@@ -11,6 +11,7 @@ use Sync\Factories\GetAccountHandlerFactory;
 use Sync\Factories\SumHandlerFactory;
 use Sync\Factories\UnisenderContactHandlerFactory;
 use Sync\Factories\SendHandlerFactory;
+use Sync\Factories\WebhookHandlerFactory;
 use Sync\Factories\WidgetHandlerFactory;
 use Sync\Handlers\AddIntegrationHandler;
 use Sync\Handlers\AuthHandler;
@@ -19,6 +20,7 @@ use Sync\Handlers\GetAccountHandler;
 use Sync\Handlers\SumHandler;
 use Sync\Handlers\UnisenderContactHandler;
 use Sync\Handlers\SendHandler;
+use Sync\Handlers\WebhookHandler;
 use Sync\Handlers\WidgetHandler;
 
 class ConfigProvider
@@ -43,6 +45,7 @@ class ConfigProvider
                 GetAccountHandler::class => GetAccountHandlerFactory::class,
                 AddIntegrationHandler::class => AddIntegrationHandlerFactory::class,
                 WidgetHandler::class => WidgetHandlerFactory::class,
+                WebhookHandler::class => WebhookHandlerFactory::class,
             ],
         ];
     }
