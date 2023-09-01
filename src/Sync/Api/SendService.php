@@ -64,6 +64,8 @@ class SendService extends UnisenderApiService
      */
     public function syncContacts(array $bodyParams): string
     {
+        $request = [];
+
         if (isset($bodyParams['contacts']['update']) || isset($bodyParams['contacts']['add'])) {
             $this->contactService = new ContactsService;
 
@@ -86,12 +88,21 @@ class SendService extends UnisenderApiService
                             'data' => [$contactName, $contactEmail],
                         );
 
-                        $this
+                        Contact::updateOrCreate([
+                            'amo_id' => $bodyParams['account']['id']
+                        ], [
+                            'email' => $contactEmail,
+                            'name' => $contactName,
+                        ]);
+
+                        $request = $this
                             ->unisenderApi
                             ->importContacts($request);
                     }
                 }
             }
         }
+
+        return $request;
     }
 }
