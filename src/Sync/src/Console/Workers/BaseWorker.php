@@ -2,56 +2,50 @@
 
 namespace Sync\src\Console\Workers;
 
+use Illuminate\Contracts\Queue\Job;
 use Pheanstalk\Contract\PheanstalkInterface;
 use Pheanstalk\Pheanstalk;
-use Illuminate\Contracts\Queue\Job;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Sync\config\BeanstalkConfig;
 use Throwable;
 
 /**
- * Class TimeWorker
- *
+ * Class BaseWorker
  * @package Sync\src\Console\Workers;
  */
-class TimeWorker extends BaseWorker
+abstract class BaseWorker extends Command
 {
     /** @var Pheanstalk подключение к хосту */
     protected Pheanstalk $connection;
 
     /** @var string $queue */
-    protected string $queue = 'times';
-
-    /** @var BeanstalkConfig конфиг подключения */
-    protected BeanstalkConfig $beanstalk;
+    protected string $queue = 'default';
 
     /**
-     * Конструктор TimeWorker
-     *
+     * Конструктор BaseWorker
+     * @param BeanstalkConfig $beanstalk
      */
-    public function __construct()
+    public function __construct(BeanstalkConfig $beanstalk)
     {
-        $container = require 'config/container.php';
-
-        $this->beanstalk = new BeanstalkConfig($container);
-        parent::__construct($this->beanstalk);
-        $this->connection = $this->beanstalk->getConnection();
+        parent::__construct();
+        $this->connection = $beanstalk->getConnection();
     }
 
     /**
-     * Обработка очереди
-     *
-     * @return void
+     * Вызов через CLI
+     * @param InputInterface $input
+     * @param OutputInterface $output
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         while (
-            $job = $this
-                ->connection
-                ->watchOnly($this->queue)
-                ->ignore(PheanstalkInterface::DEFAULT_TUBE)
-                ->reserve()
+        $job = $this
+            ->connection
+            ->watchOnly($this->queue)
+            ->ignore(PheanstalkInterface::DEFAULT_TUBE)
+            ->reserve()
         ) {
             {
                 try {
@@ -73,11 +67,18 @@ class TimeWorker extends BaseWorker
     }
 
     /**
+     * Обработка дополнительных ошибок
+     * @param Throwable $exception
+     * @param Job $job
+     */
+    public function handleException(Throwable $exception, $job)
+    {
+        echo 'Error Unhandled exception $exception' . PHP_EOL . $job->getData();
+    }
+
+    /**
      * Обработка задачи
      * @param  $data
      */
-    public function process($data)
-    {
-        echo "Текущее время: " . $data . PHP_EOL;
-    }
+    abstract public function process($data);
 }

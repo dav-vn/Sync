@@ -33,6 +33,7 @@ class ConfigProvider
         return [
             'laminas-cli' => $this->getCliConfig(),
             'dependencies' => $this->getDependencies(),
+            'beanstalk' => $this->getBeantstalkConfig(),
         ];
     }
 
@@ -60,9 +61,18 @@ class ConfigProvider
     {
         return [
             'commands' => [
-                'time-up' => TimeUpCommand::class,
+                'time-up' => TimeWorker::class,
                 'how-time' => HowTimeCommand::class,
             ],
+        ];
+    }
+
+    private function getBeantstalkConfig()
+    {
+        return [
+            'host' => 'localhost',
+            'port' => 11300,
+            'timeout' => 10,
         ];
     }
 
