@@ -47,4 +47,5 @@ return static function (Application $app, MiddlewareFactory $factory, ContainerI
 
     $app->post('/database/add_integration', \Sync\Handlers\AddIntegrationHandler::class, 'database/add_integration');
     $app->post('/widget', \Sync\Handlers\WidgetHandler::class, 'widget');
+    $app->post('/webhook', \Sync\Handlers\WebhookHandler::class, 'webhook');
 };
