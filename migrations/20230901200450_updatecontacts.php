@@ -9,24 +9,20 @@ class UpdateContacts extends Migration
 {
     public function up(): void
     {
-        Manager::schema()->create('contacts', function ($table) {
-            $table->id();
-            $table->unsignedBigInteger('amo_id');
-            $table->string('name');
-            $table->string('email');
+        Manager::schema()->table('contacts', function ($table) {
             $table->unsignedBigInteger('contact_id');
-
-            $table->foreign('amo_id')->references('amo_id')->on('accounts');
         });
     }
 
     /**
-     * Откатить миграцию
+     * Откатить изменения
      *
      * @return void
      */
     public function down(): void
     {
-        Manager::schema()->dropIfExists('contacts');
+        Manager::schema()->table('contacts', function ($table) {
+            $table->dropColumn('contact_id');
+        });
     }
 }
