@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sync;
 
-use Sync\Command\HowTimeCommand;
+use Sync\src\Console\Command\HowTimeCommand;
 use Sync\Factories\AddIntegrationHandlerFactory;
 use Sync\Factories\AuthHandlerFactory;
 use Sync\Factories\ContactsHandlerFactory;
@@ -58,7 +58,7 @@ class ConfigProvider
     {
         return [
             'commands' => [
-                'sync: hello-world' => HowTimeCommand::class,
+                'how-time' => HowTimeCommand::class,
             ],
         ];
     }
