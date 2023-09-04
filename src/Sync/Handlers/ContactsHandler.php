@@ -28,9 +28,16 @@ class ContactsHandler implements RequestHandlerInterface
         $apiService = new ContactsService();
         $queryParams = $request->getQueryParams();
 
+        if ($queryParams['id'] == 0 || !is_numeric($queryParams['id']) || empty($queryParams['id'])) {
+            return new JsonResponse([
+                'status' => 'error',
+                'error_message' => 'ID Validation error',
+            ], 400);
+        }
         return new JsonResponse([
-            $apiService->get($queryParams),
-        ]);
+            'status' => 'success',
+            'data' => $apiService->get($queryParams),
+        ], 200);
     }
 }
 

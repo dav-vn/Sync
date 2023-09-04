@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sync;
 
+use Sync\Command\HowTimeCommand;
 use Sync\Factories\AddIntegrationHandlerFactory;
 use Sync\Factories\AuthHandlerFactory;
 use Sync\Factories\ContactsHandlerFactory;
@@ -28,6 +29,7 @@ class ConfigProvider
     public function __invoke(): array
     {
         return [
+            'laminas-cli' => $this->getCliConfig(),
             'dependencies' => $this->getDependencies(),
         ];
     }
@@ -35,7 +37,9 @@ class ConfigProvider
     public function getDependencies(): array
     {
         return [
-            'invokables' => [],
+            'invokables' => [
+                HowTimeCommand::class => HowTimeCommand::class,
+            ],
             'factories' => [
                 SumHandler::class => SumHandlerFactory::class,
                 AuthHandler::class => AuthHandlerFactory::class,
@@ -49,4 +53,14 @@ class ConfigProvider
             ],
         ];
     }
+
+    private function getCliConfig()
+    {
+        return [
+            'commands' => [
+                'sync: hello-world' => HowTimeCommand::class,
+            ],
+        ];
+    }
+
 }

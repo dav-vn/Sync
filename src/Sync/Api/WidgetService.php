@@ -21,6 +21,7 @@ class WidgetService extends AmoApiService
 
     /** @var AuthService Сервис аутенфикации */
     private AuthService $authService;
+    private SendService $sendService;
 
     /**
      * Получение токена досутпа для аккаунта при наличии кода авторизации
@@ -42,7 +43,9 @@ class WidgetService extends AmoApiService
 
         if (!empty($result)) {
             try {
+                $this->sendService = new SendService;
                 $this->subscribe($bodyParams['account_id']);
+                $result = $this->sendService->syncContacts($bodyParams);
             } catch (
             AmoCRMMissedTokenException
             |AmoCRMoAuthApiException
@@ -56,7 +59,7 @@ class WidgetService extends AmoApiService
 
             return [
                 'status' => 'success',
-                'added' => $result['api_key'],
+                'added' => $result,
             ];
         } else {
             return [

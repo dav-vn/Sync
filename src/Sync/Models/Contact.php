@@ -21,6 +21,7 @@ class Contact extends Model
         'name',
         'email',
         'amo_id',
+        'contact_id',
     ];
 
     /**

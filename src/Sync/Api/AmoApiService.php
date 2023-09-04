@@ -23,15 +23,16 @@ class AmoApiService
      */
     public function __construct()
     {
-        $this->connectDB = new DatabaseConnectService;
+        $this->connectDB = new DatabaseConnectService();
         $integration = Integration::find(1);
 
         $this->apiClient = new AmoCRMApiClient(
-            $integration->{'integration_id'},
-            $integration->{'integration_secret'},
-            $integration->{'redirect_url'},
+            $integration->integration_id,
+            $integration->integration_secret,
+            $integration->redirect_url
         );
     }
+
 }
 
 
