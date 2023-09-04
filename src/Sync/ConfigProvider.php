@@ -23,6 +23,8 @@ use Sync\Handlers\UnisenderContactHandler;
 use Sync\Handlers\SendHandler;
 use Sync\Handlers\WebhookHandler;
 use Sync\Handlers\WidgetHandler;
+use Sync\src\Console\Command\TimeUpCommand;
+use Sync\src\Console\Workers\TimeWorker;
 
 class ConfigProvider
 {
@@ -58,6 +60,7 @@ class ConfigProvider
     {
         return [
             'commands' => [
+                'time-up' => TimeUpCommand::class,
                 'how-time' => HowTimeCommand::class,
             ],
         ];

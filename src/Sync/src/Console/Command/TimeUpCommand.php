@@ -13,7 +13,7 @@ use Sync\src\Console\Workers\TimeWorker;
  *
  * @package Sync\src\Console\Command;
  */
-class HowTimeCommand extends Command
+class TimeUpCommand extends Command
 {
     /**
      * Конфигурация команды
@@ -23,23 +23,21 @@ class HowTimeCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('how-time')
+            ->setName('time-up')
             ->setDescription('Show current date time');
     }
 
     /**
-     * Инициализауия продюссера, создание задачи и добавление ее в очередь
+     * Инициализауия воркера, создание задачи и добавление ее в очередь
      *
      * @return void
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function execute(InputInterface $input, OutputInterface $output)
     {
-        $time = date('H:i (m.Y)');
-        $producer = new TimeProducer();
-        $producer->produce($time);
+        $worker = new TimeWorker();
+        $worker->execute();
 
         $this->getApplication()->setAutoExit(false);
-
-        return 0;
     }
+
 }
