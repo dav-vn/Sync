@@ -22,6 +22,7 @@ class DatabaseConnectService
         $capsule->addConnection(array(
             'driver' => 'mysql',
             'host' => 'application-mysql',
+            'port' => '3306',
             'database' => $_ENV['DB_DATABASE'],
             'username' => $_ENV['DB_USERNAME'],
             'password' => $_ENV['DB_PASSWORD'],

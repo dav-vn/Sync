@@ -12,9 +12,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Access extends Model
 {
-    /** @var bool отключение временных меток */
-    public $timestamps = false;
-
     /** @var array защищенные элементы таблицы */
     protected $guarded = [
     ];

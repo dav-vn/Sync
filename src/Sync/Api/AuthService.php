@@ -3,6 +3,7 @@
 namespace Sync\Api;
 
 use AmoCRM\Exceptions\BadTypeException;
+use Carbon\Carbon;
 use Exception;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
@@ -35,14 +36,16 @@ class AuthService extends AmoApiService implements AuthInterface
 
         $this->apiClient->setAccessToken($accessToken)
             ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
-            ->onAccessTokenRefresh(function (AccessTokenInterface $accessToken, string $baseDomain) use ($userId) {
-                $this->saveToken(intval($userId), [
-                    'accessToken' => $accessToken->getToken(),
-                    'refreshToken' => $accessToken->getRefreshToken(),
-                    'expires' => $accessToken->getExpires(),
-                    'baseDomain' => $baseDomain,
-                ]);
-            });
+            ->onAccessTokenRefresh(
+                function (AccessTokenInterface $accessToken, string $baseDomain) use ($userId) {
+                    $this->saveToken(intval($userId), [
+                        'accessToken' => $accessToken->getToken(),
+                        'refreshToken' => $accessToken->getRefreshToken(),
+                        'expires' => $accessToken->getExpires(),
+                        'baseDomain' => $baseDomain,
+                    ]);
+                }
+            );
 
         return $accessToken;
     }
@@ -86,7 +89,16 @@ class AuthService extends AmoApiService implements AuthInterface
             if (isset($queryParams['button'])) {
                 echo $this->apiClient->getOAuthClient()
                     ->setBaseDomain(self::TARGET_DOMAIN)
-                    ->getOAuthButton(['title' => 'Установитьинтеграцию', 'compact' => true, 'class_name' => 'className', 'color' => 'default', 'error_callback' => 'handleOauthError', 'state' => $state]);
+                    ->getOAuthButton(
+                        [
+                            'title' => 'Установитьинтеграцию',
+                            'compact' => true,
+                            'class_name' => 'className',
+                            'color' => 'default',
+                            'error_callback' => 'handleOauthError',
+                            'state' => $state
+                        ]
+                    );
             } else {
                 $authorizationUrl = $this->apiClient->getOAuthClient()
                     ->setBaseDomain(self::TARGET_DOMAIN)
@@ -141,7 +153,8 @@ class AuthService extends AmoApiService implements AuthInterface
                 'base_domain' => $token['base_domain'],
                 'access_token' => $token['access_token'],
                 'refresh_token' => $token['refresh_token'],
-                'expires' => $token['expires']
+                'expires' => $token['expires'],
+                'updated_at' => Carbon::now(),
             ]);
         }
     }
