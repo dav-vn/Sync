@@ -23,7 +23,9 @@ use Sync\Handlers\UnisenderContactHandler;
 use Sync\Handlers\SendHandler;
 use Sync\Handlers\WebhookHandler;
 use Sync\Handlers\WidgetHandler;
-use Sync\src\Console\Command\TimeUpCommand;
+use Sync\src\Console\Command\UpdateTokenCommand;
+use Sync\src\Console\Producers\VerifyTokenProducer;
+use Sync\src\Console\Workers\RefreshTokenWorker;
 use Sync\src\Console\Workers\TimeWorker;
 
 class ConfigProvider
@@ -63,6 +65,8 @@ class ConfigProvider
             'commands' => [
                 'time-up' => TimeWorker::class,
                 'how-time' => HowTimeCommand::class,
+                'update' => UpdateTokenCommand::class,
+                'make-update' => RefreshTokenWorker::class,
             ],
         ];
     }
@@ -70,7 +74,7 @@ class ConfigProvider
     private function getBeantstalkConfig()
     {
         return [
-            'host' => 'localhost',
+            'host' => 'application-beanstalkd',
             'port' => 11300,
             'timeout' => 10,
         ];
