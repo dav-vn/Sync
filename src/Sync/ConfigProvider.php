@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sync;
 
-use Sync\Command\HowTimeCommand;
+use Sync\src\Console\Command\HowTimeCommand;
 use Sync\Factories\AddIntegrationHandlerFactory;
 use Sync\Factories\AuthHandlerFactory;
 use Sync\Factories\ContactsHandlerFactory;
@@ -23,6 +23,8 @@ use Sync\Handlers\UnisenderContactHandler;
 use Sync\Handlers\SendHandler;
 use Sync\Handlers\WebhookHandler;
 use Sync\Handlers\WidgetHandler;
+use Sync\src\Console\Command\TimeUpCommand;
+use Sync\src\Console\Workers\TimeWorker;
 
 class ConfigProvider
 {
@@ -31,6 +33,7 @@ class ConfigProvider
         return [
             'laminas-cli' => $this->getCliConfig(),
             'dependencies' => $this->getDependencies(),
+            'beanstalk' => $this->getBeantstalkConfig(),
         ];
     }
 
@@ -58,8 +61,18 @@ class ConfigProvider
     {
         return [
             'commands' => [
-                'sync: hello-world' => HowTimeCommand::class,
+                'time-up' => TimeWorker::class,
+                'how-time' => HowTimeCommand::class,
             ],
+        ];
+    }
+
+    private function getBeantstalkConfig()
+    {
+        return [
+            'host' => 'localhost',
+            'port' => 11300,
+            'timeout' => 10,
         ];
     }
 
