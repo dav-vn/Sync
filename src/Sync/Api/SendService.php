@@ -2,6 +2,8 @@
 
 namespace Sync\Api;
 
+use AmoCRM\Exceptions\AmoCRMApiException;
+use AmoCRM\Exceptions\AmoCRMMissedTokenException;
 use Sync\Models\Contact;
 
 /**
@@ -13,68 +15,82 @@ class SendService extends UnisenderApiService
 {
     /** @var ContactsService Сервис получения контактов из amoCRM */
     private ContactsService $contactService;
+    private AuthService $authService;
+
+    private AmoApiService $apiClient;
+    private UnisenderContactService $unisenderContactService;
 
     /**
      * Отправка контактов в Unisender из БД
      *
      * @param array $queryParams
-     * @return array Ответ на запрос о выгрузке контактов в Unisender.
+     * @return string Ответ на запрос о выгрузке контактов в Unisender.
      */
-    public function sendContacts(array $queryParams): array
+    public function sendContacts(array $queryParams): string
     {
         $this->contactService = new ContactsService();
 
-        $contactsList = $this
+        $contactsPages = $this
             ->contactService
             ->get($queryParams);
 
-        $this->contactService->save($contactsList, intval($queryParams['id']));
 
         $result = [];
         $data = [];
 
-        foreach ($contactsList as $contact) {
-            if (!empty($contact['email'])) {
-                foreach ($contact['email'] as $email) {
-                    $data[] = [$email, $contact['name']];
+        foreach ($contactsPages as $contacts) {
+            foreach ($contacts as $contact) {
+                if (!empty($contact['email'])) {
+                    foreach ($contact['email'] as $email) {
+                        $data[] = [$email, $contact['name']];
+                    }
                 }
             }
         }
 
-
-        $request = array(
+        $request = [
             'field_names' => ['email', 'Name'],
             'data' => $data,
-        );
+        ];
 
-        $result[] = $this
+        $result = $this
             ->unisenderApi
             ->importContacts($request);
 
-        return $request['data'];
+        if (strpos($result, 'result')) {
+            $this->contactService->save($contactsPages, intval($queryParams['id']));
+        }
+
+        return $result;
     }
 
     /**
      * Обновление контакта в Unisender из БД по сигналу от вебхука
      *
      * @param array $bodyParams
-     *
+     * @throws AmoCRMMissedTokenException
+     * @throws AmoCRMApiException
      */
-    public function updateContacts(array $bodyParams)
+    public function updateContact(array $bodyParams)
     {
+        $data = [];
         $contactId = intval($bodyParams['contacts']['update'][0]['id']);
         $userId = intval($bodyParams['account']['id']);
 
         $this->contactService = new ContactsService;
-        $this->contactService->getOne($contactId, $userId);
+        $contacts = $this->contactService->getOne($contactId, $userId);
 
-        $email = $bodyParams['contacts']['update'][0]['custom_fields'][0]['values'][0]['value'];
+        $emails = $this->contactService->getEmails($contacts);
         $name = $bodyParams['contacts']['update'][0]['name'];
 
-        $request = array(
+        foreach ($emails as $email) {
+            $data[] = [$email, $name];
+        }
+
+        $request = [
             'field_names' => ['email', 'Name'],
-            'data' => [[$email, $name]],
-        );
+            'data' => $data,
+        ];
 
         $result = $this
             ->unisenderApi
@@ -83,52 +99,51 @@ class SendService extends UnisenderApiService
         if (strpos($result, 'result')) {
             $this->saveChanges($contactId, $request['data'], $userId);
         }
-
-        return $result;
     }
 
     /**
      * Добавление контакта в Unisender из БД по сигналу от вебхука
      *
      * @param array $bodyParams
-     *
+     * @throws AmoCRMMissedTokenException
+     * @throws AmoCRMApiException
      */
     public function addContact(array $bodyParams)
     {
+        $data = [];
         $contactId = intval($bodyParams['contacts']['add'][0]['id']);
         $userId = intval($bodyParams['account']['id']);
 
         $this->contactService = new ContactsService;
-        $this->contactService->getOne($contactId, $userId);
+        $contacts = $this->contactService->getOne($contactId, $userId);
 
-        $email = $bodyParams['contacts']['add'][0]['custom_fields'][0]['values'][0]['value'];
+        $emails = $this->contactService->getEmails($contacts);
         $name = $bodyParams['contacts']['add'][0]['name'];
 
-        $request = array(
+        foreach ($emails as $email) {
+            $data[] = [$email, $name];
+        }
+
+        $request = [
             'field_names' => ['email', 'Name'],
-            'data' => [[$email, $name]],
-        );
+            'data' => $data,
+        ];
 
         $result = $this
             ->unisenderApi
             ->importContacts($request);
 
         if (strpos($result, 'result')) {
-            $this->saveChanges(
-                $contactId,
-                $request['data'],
-                $userId
-            );
+            $this->saveChanges($contactId, $request['data'], $userId);
         }
-
-        return $result;
     }
 
     /**
      * Удаление контакта в Unisender  из всех списков из БД по сигналу от вебхука
      *
      * @param array $bodyParams
-     *
+     * @throws AmoCRMMissedTokenException
+     * @throws AmoCRMApiException
      */
     public function deleteContact(array $bodyParams)
     {
@@ -157,25 +172,32 @@ class SendService extends UnisenderApiService
                 'contact' => $email,
             );
 
-            $result = $this
+            $this
                 ->unisenderApi
                 ->exclude($params);
 
-            if (empty($result)) {
+            if (!empty($result)) {
                 Contact::where('email', $email)->delete();
             }
         }
     }
 
 
-    public function saveChanges(int $contactId, array $data, $userId): void
+    /**
+     * Cохранение изменений в БД по сигналу от вебхука
+     *
+     * @param int $contactId
+     * @param array $data
+     * @param int $userId
+     */
+    public function saveChanges(int $contactId, array $data, int $userId): void
     {
         for ($i = 0; $i < count($data); $i++) {
             Contact::updateOrCreate([
                 'contact_id' => $contactId,
             ], [
-                'name' => $data['name'],
-                'email' => $data[$i]['email'],
+                'name' => $data[$i][0],
+                'email' => $data[$i][1],
                 'amo_id' => $userId
             ]);
         }

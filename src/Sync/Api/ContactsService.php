@@ -22,7 +22,6 @@ class ContactsService extends AuthService
     /** @var AuthService Сервис аутенфикации интеграции. */
     protected AuthService $authService;
 
-
     /**
      * Получение ассоциативного массива с именами всех контактов
      * и имеющихся у них email адресов.
@@ -48,6 +47,7 @@ class ContactsService extends AuthService
                         ->contacts()
                         ->get()
                         ->count();
+
                 } catch (AmoCRMMissedTokenException $e) {
                     return new JsonResponse([
                         'status' => 'error',
@@ -65,95 +65,144 @@ class ContactsService extends AuthService
                     ]);
                 }
 
-                for ($i = 1; $i <= intdiv($count, 250) + 1; $i++) {
+                for ($i = 0; $i <= intdiv($count, 250); $i++) {
                     $contactsFilter = (new ContactsFilter())
                         ->setLimit(250)
-                        ->setPage($i);
+                        ->setPage($i + 1);
 
                     try {
-                        $contacts = $this->apiClient->contacts()->get($contactsFilter);
+                        $contacts = $this
+                            ->apiClient
+                            ->contacts()
+                            ->get($contactsFilter)
+                            ->toArray();
 
-                        foreach ($contacts as $contact) {
-                            $name = $contact->name;
-                            $contactId = $contact->id;
-                            $emails = [];
-
-                            foreach ($contact->custom_fields_values as $values) {
-                                if ($values->field_code === 'EMAIL') {
-                                    foreach ($values->values as $currentValue) {
-                                        if ($currentValue->enum === 'WORK') {
-                                            $emails[] = $currentValue->value;
-                                        }
-                                    }
-                                }
-                            }
-
-                            $contactData = [
-                                'name' => $name,
-                                'email' => !empty($emails) ? $emails : null,
-                                'id' => $contactId,
-                            ];
-
-                            $contactsList[] = $contactData;
-                        }
                     } catch (AmoCRMMissedTokenException $e) {
                         return new JsonResponse([
                             'status' => 'error',
                             'error_message' => 'Ошибка доступа к токену',
-                        ], 500);
+                        ]);
                     } catch (AmoCRMoAuthApiException $e) {
                         return new JsonResponse([
                             'status' => 'error',
                             'error_message' => 'Ошибка доступа к API',
-                        ], 500);
+                        ]);
                     } catch (AmoCRMApiException $e) {
                         return new JsonResponse([
                             'status' => 'error',
-                            'error_message' => 'Ошибка вызова API',
-                        ], 500);
+                            'error_message' => 'Ошибка вызова к API',
+                        ]);
+                    }
+
+                    if (!empty($contacts)) {
+                        foreach ($contacts as $contact) {
+                            $name = $contact['name'];
+                            $contactID = $contact['id'];
+                            $emails = $this->getEmails($contact);
+
+                            $contactPage[] = [
+                                'name' => $name,
+                                'email' => !empty($emails) ? $emails : null,
+                                'contact_id' => $contactID,
+                            ];
+                        }
+                        $contactsPages[] = $contactPage;
                     }
                 }
+
+                return $contactsPages;
             }
-            return $contactsList;
+
         } else {
             $this->auth($queryParams);
         }
     }
 
 
-    public function getOne($contactId, $userId)
+    /**
+     * Получение одного контакта по параметрам ID
+     *
+     * @param int $contactId
+     * @param int $userId
+     * @return array
+     * @throws AmoCRMoAuthApiException
+     * @throws AmoCRMMissedTokenException
+     * @throws Exception
+     * @throws AmoCRMApiException
+     */
+    public function getOne(int $contactId, int $userId): array
     {
-        $this->initialise($userId);
+        try {
+            $this->initialise($userId);
 
-//        $this->initialise($userId);
-
-        return $this
-            ->apiClient
-            ->contacts()->getOne($contactId)->toArray();
+            return $this
+                ->apiClient
+                ->contacts()->getOne($contactId)->toArray();
+        } catch (AmoCRMMissedTokenException $e) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Ошибка доступа к токену',
+            ];
+        } catch (AmoCRMoAuthApiException $e) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Ошибка доступа к API',
+            ];
+        } catch (AmoCRMApiException $e) {
+            return [
+                'status' => 'error',
+                'error_message' => 'Ошибка вызова к API',
+            ];
+        }
     }
 
 
     /**
      * Сохранение массива контактов в БД
      *
-     * @param array $contacts
-     * @param int $userId
+     * @param array $contactsPages
+     * @param int $userID
      * @return void
      */
-    public function save(array $contacts, int $userId): void
+    public function save(array $contactsPages, int $userID): void
     {
-        foreach ($contacts as $contact) {
-            if (is_array($contact)) {
-                $emails = $contact['email'];
-                foreach ($emails as $email) {
-                    Contact::updateOrCreate(
-                        ['contact_id' => $contact['id']],
-                        ['name' => $contact['name'],
-                            'email' => $email,
-                        ]);
+        foreach ($contactsPages as $contacts) {
+            foreach ($contacts as $contact) {
+                if (is_array($contact)) {
+                    $emails = $contact['email'];
+                    foreach ($emails as $email) {
+                        Contact::updateOrCreate(
+                            [
+                                'contact_id' => $contact['contact_id'],
+                                'amo_id' => $userID,
+                            ],[
+                                'name' => $contact['name'],
+                                'email' => $email,
+                            ]);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Поиск рабочих адресов почты и сохранение в массив
+     *
+     * @param array $contacts
+     * @return array
+     */
+    public function getEmails(array $contacts): array
+    {
+        $emails = [];
+        foreach ($contacts['custom_fields_values'] as $values) {
+            if ($values['field_code'] === 'EMAIL') {
+                foreach ($values['values'] as $value) {
+                    $emails[] = $value['value'];
+                }
+            }
+        }
+
+        return $emails;
     }
 }
 

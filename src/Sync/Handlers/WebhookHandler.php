@@ -26,27 +26,28 @@ class WebhookHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $bodyParams = $request->getParsedBody();
-        $this->sendService = new SendService();
+        $sendService = new SendService();
 
         if (isset($bodyParams['contacts'])) {
             $contacts = $bodyParams['contacts'];
 
             if (isset($contacts['add'])) {
                 return new JsonResponse([
-                    $this->sendService->addContacts($bodyParams),
+                    $sendService->addContact($bodyParams),
                 ], 200);
 
             }
 
             if (isset($contacts['delete'])) {
                 return new JsonResponse([
-                    $this->sendService->deleteContact($bodyParams),
+                    $sendService->deleteContact($bodyParams),
                 ], 200);
 
             }
+
             if (isset($contacts['update'])) {
                 return new JsonResponse([
-                    $this->sendService->updateContact($bodyParams),
+                    $sendService->updateContact($bodyParams),
                 ], 200);
             }
         }
