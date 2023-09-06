@@ -1,1 +1,1 @@
-0 22 * * * php ./mezzio token-update
+0 22 * * *  /var/www/application/vendor/bin/laminas update -t 24
