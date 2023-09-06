@@ -12,14 +12,19 @@ use Throwable;
  */
 class SimpleAuthService extends AmoApiService implements AuthInterface
 {
+    /** @var  AuthService **/
+    private AuthService $authService;
+
     /**
      * Получение токена досутпа для аккаунта при наличии кода авторизации
      *
      * @param array $queryParams Входные GET параметры.
      * @return array  Имя авторизованного аккаунта | Вывод ошибки
      */
-    public function auth(array $queryParams)
+    public function auth(array $queryParams): array
     {
+        $this->authService = new AuthService;
+
         try {
             $this
                 ->apiClient
@@ -32,8 +37,23 @@ class SimpleAuthService extends AmoApiService implements AuthInterface
                 ->getOAuthClient()
                 ->setBaseDomain($queryParams['referer'])
                 ->getAccessTokenByCode($queryParams['code']);
+
+            $this->apiClient->setAccessToken($accessToken);;
+
+            $this
+                ->authService
+                ->saveToken($this->apiClient->account()->getCurrent()->getId(), [
+                'base_domain' => $this->apiClient->getAccountBaseDomain(),
+                'access_token' => $accessToken->getToken(),
+                'refresh_token' => $accessToken->getRefreshToken(),
+                'expires' => $accessToken->getExpires(),
+            ]);
+
         } catch (Throwable $e) {
-            die($e->getMessage());
+           return [
+             'status' => 'error',
+             'error_message' => $e->getMessage(),
+           ];
         }
 
         session_abort();

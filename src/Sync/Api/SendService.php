@@ -65,23 +65,23 @@ class SendService extends UnisenderApiService
     }
 
     /**
-     * Обновление контакта в Unisender из БД по сигналу от вебхука
+     * Добавление контакта в Unisender из БД по сигналу от вебхука
      *
      * @param array $bodyParams
      * @throws AmoCRMMissedTokenException
      * @throws AmoCRMApiException
      */
-    public function updateContact(array $bodyParams)
+    public function addContact(array $bodyParams)
     {
         $data = [];
-        $contactId = intval($bodyParams['contacts']['update'][0]['id']);
+        $contactId = intval($bodyParams['contacts']['add'][0]['id']);
         $userId = intval($bodyParams['account']['id']);
 
         $this->contactService = new ContactsService;
         $contacts = $this->contactService->getOne($contactId, $userId);
 
         $emails = $this->contactService->getEmails($contacts);
-        $name = $bodyParams['contacts']['update'][0]['name'];
+        $name = $bodyParams['contacts']['add'][0]['name'];
 
         foreach ($emails as $email) {
             $data[] = [$email, $name];
@@ -102,23 +102,23 @@ class SendService extends UnisenderApiService
     }
 
     /**
-     * Добавление контакта в Unisender из БД по сигналу от вебхука
+     * Обновление контакта в Unisender из БД по сигналу от вебхука
      *
      * @param array $bodyParams
      * @throws AmoCRMMissedTokenException
      * @throws AmoCRMApiException
      */
-    public function addContact(array $bodyParams)
+    public function updateContact(array $bodyParams)
     {
         $data = [];
-        $contactId = intval($bodyParams['contacts']['add'][0]['id']);
+        $contactId = intval($bodyParams['contacts']['update'][0]['id']);
         $userId = intval($bodyParams['account']['id']);
 
         $this->contactService = new ContactsService;
         $contacts = $this->contactService->getOne($contactId, $userId);
 
         $emails = $this->contactService->getEmails($contacts);
-        $name = $bodyParams['contacts']['add'][0]['name'];
+        $name = $bodyParams['contacts']['update'][0]['name'];
 
         foreach ($emails as $email) {
             $data[] = [$email, $name];
@@ -160,28 +160,29 @@ class SendService extends UnisenderApiService
         $contactData = $this->contactService->get($decodedAccount);
 
         foreach ($contactData as $contact) {
+            $name = $contact['name'];
             if ($contact['id'] == $contactId) {
                 $emails = $contact['email'];
-                break;
             }
         }
 
         foreach ($emails as $email) {
-            $params = array(
-                'contact_type' => 'email',
-                'contact' => $email,
-            );
+            $data[] = [$email, $name];
+
+            $request = [
+                'field_names' => ['email', 'Name', 'delete'],
+                'data' => $data,
+            ];
 
             $this
                 ->unisenderApi
-                ->exclude($params);
+                ->importContacts($request);
 
             if (!empty($result)) {
                 Contact::where('email', $email)->delete();
             }
         }
     }
-
 
     /**
      * Cохранение изменений в БД по сигналу от вебхука

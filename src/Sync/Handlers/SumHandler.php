@@ -51,6 +51,11 @@ class SumHandler implements RequestHandlerInterface
                 $sum += intval($value);
             } elseif (is_numeric($key) === false && is_numeric($value)) {
                 $sum += intval($value);
+            } else {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'error_message' => 'Invalid request',
+                ]);
             }
         }
 

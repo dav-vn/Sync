@@ -2,6 +2,7 @@
 
 namespace Sync\Api;
 
+use AmoCRM\Exceptions\AmoCRMApiException;
 use Exception;
 use Illuminate\Support\Carbon;
 use League\OAuth2\Client\Token\AccessTokenInterface;
@@ -18,15 +19,6 @@ class TokensRefreshService extends AuthService
     private AuthService $authService;
 
     /**
-     * TokensRefreshProducer конструктор
-     * */
-    public function __construct()
-    {
-        $this->authService = new AuthService;
-        parent::__construct('local');
-    }
-
-    /**
      * Проверка токенов, которые истекают в заданое время
      *
      * @param int $time
@@ -38,9 +30,10 @@ class TokensRefreshService extends AuthService
         $currentTime = Carbon::now()->timestamp;
         $tokens = Access::all()->toArray();
         foreach ($tokens as $token) {
-            $tokenUpdated = Carbon::parse($token['updated_at'])->timestamp;
-            $tokenExpire = $tokenUpdated + ($time * 60 ** 2);
-            if ($currentTime >= $tokenExpire) {
+            $tokenExpires = intval($token['expires']);
+            $tokenLifeTime = $tokenExpires - $currentTime;
+            $time = $time * 60 ** 2;
+            if ($tokenLifeTime > $time) {
                 $result[] = [
                     $token['amo_id'],
                 ];
@@ -57,21 +50,23 @@ class TokensRefreshService extends AuthService
      * @return void
      * @throws Exception
      */
-    public function refreshTokensExpiration(int $userId)
+    public function refreshTokensExpiration(int $userId): string
     {
+        $this->authService = new AuthService();
         $accessToken = $this->authService->readToken($userId);
 
         $this->apiClient->setAccessToken($accessToken)
             ->setAccountBaseDomain($accessToken->getValues()['base_domain'])
             ->onAccessTokenRefresh(
                 function (AccessTokenInterface $accessToken, string $baseDomain) use ($userId) {
-                $this->authService->saveToken($userId, [
-                    'accessToken' => $accessToken->getToken(),
-                    'refreshToken' => $accessToken->getRefreshToken(),
-                    'expires' => $accessToken->getExpires(),
-                    'baseDomain' => $baseDomain,
-                ]);
-            });
+                    $this->authService->saveToken($userId, [
+                        'accessToken' => $accessToken->getToken(),
+                        'refreshToken' => $accessToken->getRefreshToken(),
+                        'expires' => $accessToken->getExpires(),
+                        'baseDomain' => $baseDomain,
+                    ]);
+                }
+            );
     }
 }
 

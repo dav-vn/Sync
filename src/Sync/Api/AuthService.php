@@ -9,6 +9,7 @@ use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Sync\Interfaces\AuthInterface;
 use Sync\Models\Access;
+use Sync\Models\Account;
 use Throwable;
 
 session_start();
@@ -68,49 +69,56 @@ class AuthService extends AmoApiService implements AuthInterface
 
         if (!empty($hasAccess)) {
             $accessToken = $this->initialise(intval($_SESSION['service_id']));
-            if (!$accessToken->hasExpired()) {
-                return $this
-                    ->apiClient
-                    ->getOAuthClient()
-                    ->getResourceOwner($accessToken)
-                    ->getName();
-            }
+            return $this
+                ->apiClient
+                ->getOAuthClient()
+                ->getResourceOwner($accessToken)
+                ->getName();
         }
-
-        if (isset($queryParams['referer'])) {
-            $this->apiClient->setAccountBaseDomain($queryParams['referer'])
-                ->getOAuthClient()->setBaseDomain($queryParams['referer']);
-        }
-
-        if (!isset($queryParams['code'])) {
-            $state = bin2hex(random_bytes(16));
-            $_SESSION['oauth2state'] = $state;
-
-            if (isset($queryParams['button'])) {
-                echo $this->apiClient->getOAuthClient()
-                    ->setBaseDomain(self::TARGET_DOMAIN)
-                    ->getOAuthButton(
-                        [
-                            'title' => 'Установитьинтеграцию',
-                            'compact' => true,
-                            'class_name' => 'className',
-                            'color' => 'default',
-                            'error_callback' => 'handleOauthError',
-                            'state' => $state
-                        ]
-                    );
-            } else {
-                $authorizationUrl = $this->apiClient->getOAuthClient()
-                    ->setBaseDomain(self::TARGET_DOMAIN)
-                    ->getAuthorizeUrl(['state' => $state, 'mode' => 'post_message']);
-                header('Location:' . $authorizationUrl);
+        try {
+            if (isset($queryParams['referer'])) {
+                $this->apiClient->setAccountBaseDomain($queryParams['referer'])
+                    ->getOAuthClient()->setBaseDomain($queryParams['referer']);
             }
-            exit;
-        } elseif (empty($queryParams['state']) ||
-            empty($_SESSION['oauth2state']) ||
-            ($queryParams['state'] !== $_SESSION['oauth2state'])) {
-            unset($_SESSION['oauth2state']);
-            throw new Exception('Invalid state');
+
+            if (!isset($queryParams['code'])) {
+                $state = bin2hex(random_bytes(16));
+                $_SESSION['oauth2state'] = $state;
+
+                if (isset($queryParams['button'])) {
+                    echo $this->apiClient->getOAuthClient()
+                        ->setBaseDomain(self::TARGET_DOMAIN)
+                        ->getOAuthButton(
+                            [
+                                'title' => 'Установитьинтеграцию',
+                                'compact' => true,
+                                'class_name' => 'className',
+                                'color' => 'default',
+                                'error_callback' => 'handleOauthError',
+                                'state' => $state
+                            ]
+                        );
+                } else {
+                    $authorizationUrl = $this->apiClient->getOAuthClient()
+                        ->setBaseDomain(self::TARGET_DOMAIN)
+                        ->getAuthorizeUrl(['state' => $state, 'mode' => 'post_message']);
+                    header('Location:' . $authorizationUrl);
+                }
+                exit;
+            } elseif (empty($queryParams['state']) ||
+                empty($_SESSION['oauth2state']) ||
+                ($queryParams['state'] !== $_SESSION['oauth2state'])) {
+                unset($_SESSION['oauth2state']);
+                return [
+                    'status' => 'error',
+                    'error_message' => 'Invalid state',
+                ];
+            }
+        } catch (Throwable $e) {
+            return [
+                'status' => 'error',
+                'error_message' => $e->getMessage()
+            ];
         }
 
         try {
@@ -125,7 +133,10 @@ class AuthService extends AmoApiService implements AuthInterface
                 'expires' => $accessToken->getExpires(),
             ]);
         } catch (Throwable $e) {
-            throw new Exception($e->getMessage());
+            return [
+                'status' => 'error',
+                'error_message' => $e->getMessage()
+            ];
         }
 
         session_abort();
@@ -147,6 +158,10 @@ class AuthService extends AmoApiService implements AuthInterface
     public function saveToken(int $userID, array $token): void
     {
         if (!empty($token)) {
+            Account::updateOrCreate([
+                'amo_id' => $userID,
+            ]);
+
             Access::updateOrCreate([
                 'amo_id' => $userID,
             ], [

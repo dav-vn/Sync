@@ -45,7 +45,7 @@ class WidgetService extends AmoApiService
             try {
                 $this->sendService = new SendService;
                 $this->subscribe($bodyParams['account_id']);
-                $result = $this->sendService->syncContacts($bodyParams);
+                $result = $this->sendService->sendContacts($bodyParams);
             } catch (
             AmoCRMMissedTokenException
             |AmoCRMoAuthApiException

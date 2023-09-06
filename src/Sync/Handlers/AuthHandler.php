@@ -32,7 +32,11 @@ class AuthHandler implements RequestHandlerInterface
         $simpleAuth = new SimpleAuthService();
         $accountParams = $request->getQueryParams();
 
-        if (isset($accountParams['id'])) {
+        if (
+            isset($accountParams['id'])
+            &&
+            strlen($accountParams['id']) < 10
+        ) {
             if (
                 !is_numeric($accountParams['id']) ||
                 empty($accountParams['id'])
@@ -41,10 +45,14 @@ class AuthHandler implements RequestHandlerInterface
                     'status' => 'error',
                     'error_message' => 'ID Validation error',
                 ], 400);
+            } else {
+                return new JsonResponse([
+                    $auth->auth($accountParams),
+                ]);
             }
         }
 
-        if (isset($accountParams['from_widget']) && isset($accountParams['code'])) {
+        if (isset($accountParams['code'])) {
             if (
                 empty($accountParams['code']) ||
                 is_numeric($accountParams['code']) ||
@@ -56,16 +64,21 @@ class AuthHandler implements RequestHandlerInterface
                     'error_message' => 'Invalid request',
                 ], 400);
             }
-
-            return new JsonResponse([
-                'status' => 'success',
-                'auth as' => $simpleAuth->auth($accountParams),
-            ], 200);
+            if (isset($accountParams['from_widget'])) {
+                return new JsonResponse([
+                    $simpleAuth->auth($accountParams),
+                ]);
+            } else {
+                return new JsonResponse([
+                    $auth->auth($accountParams),
+                ]);
+            }
         }
 
         return new JsonResponse([
-            $auth->auth($accountParams),
-        ]);
+            'status' => 'error',
+            'error_message' => 'Invalid request',
+        ], 400);
     }
 }
 
