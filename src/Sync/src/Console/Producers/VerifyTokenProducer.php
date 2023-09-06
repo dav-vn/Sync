@@ -16,7 +16,7 @@ class VerifyTokenProducer
     protected Pheanstalk $connection;
 
     /** @var string $queue */
-    protected string $queue = 'tokens';
+    protected string $queue = 'accesses';
 
     /** @var TokensRefreshService сервис обновления токенов */
     private TokensRefreshService $tokensService;

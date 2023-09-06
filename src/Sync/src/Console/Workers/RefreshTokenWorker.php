@@ -23,7 +23,7 @@ class RefreshTokenWorker extends BaseWorker
     protected Pheanstalk $connection;
 
     /** @var string $queue */
-    protected string $queue = 'tokens';
+    protected string $queue = 'accesses';
 
     /** @var BeanstalkConfig конфиг подключения */
     protected BeanstalkConfig $beanstalk;
@@ -86,13 +86,20 @@ class RefreshTokenWorker extends BaseWorker
      */
     public function process($data)
     {
-        if ($data) {
-            foreach ($data as $tokenID) {
-                $this->tokenService->refreshTokensExpiration(intval($tokenID));
-                echo 'Обновлен:' . $tokenID . PHP_EOL;
+        try {
+            if ($data) {
+                foreach ($data as $tokens) {
+                    foreach ($tokens as $tokenID) {
+                        $this->tokenService->refreshTokensExpiration(intval($tokenID));
+                        echo 'Обновлен:' . $tokenID . PHP_EOL;
+                    }
+                }
+            } else {
+                echo 'Нечего обновлять' . PHP_EOL;
             }
-        } else {
-            echo 'Nothing to refresh' . PHP_EOL;
+        } catch (Throwable $exception) {
+            // Обработка исключения, например, запись в лог или вывод сообщения об ошибке
+            echo 'Ошибка: ' . $exception->getMessage() . PHP_EOL;
         }
     }
 }

@@ -12,7 +12,7 @@ use Sync\Models\Access;
  *
  * @package Sync\Api
  */
-class TokensRefreshService extends AmoApiService
+class TokensRefreshService extends AuthService
 {
     /** @var AuthService сервис авторизации */
     private AuthService $authService;
