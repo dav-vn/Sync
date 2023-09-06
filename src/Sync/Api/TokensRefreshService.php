@@ -33,7 +33,7 @@ class TokensRefreshService extends AuthService
             $tokenExpires = intval($token['expires']);
             $tokenLifeTime = $tokenExpires - $currentTime;
             $time = $time * 60 ** 2;
-            if ($tokenLifeTime > $time) {
+            if ($tokenLifeTime < $time) {
                 $result[] = [
                     $token['amo_id'],
                 ];
