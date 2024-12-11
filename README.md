@@ -1,4 +1,4 @@
-# Mezzio Skeleton and Installer
+# Mezzio Skeleton
 
 [![Build Status](https://github.com/mezzio/mezzio-skeleton/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/mezzio/mezzio-skeleton/actions/workflows/continuous-integration.yml)
 
